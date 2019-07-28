@@ -124,9 +124,7 @@
 
  
 
-      # MODESIM directories
-
-     #wd <- Rhome <-'/home/obrieea1/Documents/CAIN457 RISK CALCULATOR/'
+     
 
       wd <- Rhome <-'C:/Users/User/Documents/GIT/Bayesian-proportions-logistic-regression'
 
@@ -135,30 +133,7 @@
       wd.data <- wd # paste0(Rhome,'DATA')
 
 
-      # GPS directories - not used here
-
-      #gps <- '/view/obrieea1_view/vob/CIGE025E/CIGE025E3401/pub_2/'
-
-      #path.script <- paste0(gps, '/pgm/eff/')
-
-      #path.import <- paste0(gps, '/analysis_data/')
-
-      #path.export <- paste0(gps, '/reports/eff/')
-
-      #wd.code <- paste0(Rhome,'CODE')                
-
-      #wd.data <- paste0(Rhome,'DATA')
-
-
-      # GPS directories - not used here
-
-      #gps <- '/view/obrieea1_view/vob/CAIN457/pool/pool_002/'
-
-      #path.script <- paste0(gps, '/report/pgm_a/') 
-
-      #path.import <- paste0(gps, '/report/data_a/')  # data is here
-
-      #path.export <- paste0(gps, '/report/misc/')    # outputs here?
+     
 
 
       # rounding functions
