@@ -256,8 +256,9 @@ textInput('vec4',
                                      
                             ) ,
                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                            tabPanel("3 xxxxxxxxxxxxxxxx",
-                                      div( verbatimTextOutput("reg.summary")),
+                            tabPanel("3 stan",
+                                     #actionButton("goButton", "Go!"),
+                                     div( verbatimTextOutput("reg.summary")),
                                      h4("Figure 3 xxxxxxxxxxxxxxxxxxxxx."),         
                                      
                                      
@@ -265,8 +266,9 @@ textInput('vec4',
                                               ")),
                             ),
                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                            tabPanel("4 xxxxxxxxxxxxxxx", value=3, 
-                                 #    div(plotOutput("res.plot3", width=fig.width2, height=fig.height2)), 
+                            tabPanel("4 mcmc", value=3, 
+                                 #    div(plotOutput("res.plot3", width=fig.width2, height=fig.height2)),
+                                 div( verbatimTextOutput("reg.summary2")),
                                     h4("Figure 4 xxxxxxxxxxxxxxxxxxx. "),         
                             ) ,
                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -491,15 +493,98 @@ server <- shinyServer(function(input, output   ) {
        )
        
        
+     })
+       
+       
+       mcmc <- reactive({
        
        
        
+       
+       a=1
+       b=1
+       a1=10
+       b1=43
+       
+       
+       
+       
+       n1 = 25 #100 # trt n
+       
+       y1 = 14 # trt observed responders
+       
+       n2 = 25 #51  # placebo n
+       
+       y2 = 4   # placebo observed responders
+       
+       
+       
+       
+       
+       
+       I = 100000                               # simulations
+       
+       theta1 = rbeta(I, y1+a, n1-y1+b)        # incorp. prior for trt
+       
+       theta2 = rbeta(I, y2+a1, n2-y2+b1)      # incorp. prior for placebo
+       
+       diff = theta1-theta2                    # simulated differences
+       
+       ratio = theta1/theta2 
+       
+       or <- (theta1/ (1-theta1)) / (theta2/(1-theta2))
+       
+       
+       
+       quantiles1 = quantile(diff,c(0.025,0.25,0.5,0.75,0.975))
+       
+       print(quantiles1,digits=2)  
+       
+       # quantiles = quantile(diff,c(0.025,0.25,0.5,0.75,0.975))
+       
+       print(mean(theta1>theta2),digits=2)  
+       
+       
+       
+       
+       quantiles = quantile(ratio,c(0.025,0.25,0.5,0.75,0.975))
+       
+       print(quantiles,digits=2)  
+       
+       quantiles = quantile(or,c(0.025,0.25,0.5,0.75,0.975))
+       
+       print(quantiles,digits=2)  
+       
+       
+       quantiles = quantile(diff,c(0.025,0.25,0.5,0.75,0.975))
+       
+       print(quantiles,digits=2)  
+       
+       # quantiles = quantile(diff,c(0.025,0.25,0.5,0.75,0.975))
+       
+       print(mean(theta1>theta2),digits=2)  
+       
+       # VISUALIZATION
+       # plot(density(diff),
+       #      xlab="theta1 - theta2",
+       #      ylab="p(theta1 - theta2 | y, n)",
+       #      main="Posterior Simulation of active - placebo",
+       #      ylim=c(0,8),
+       #      frame.plot=FALSE,cex.lab=1.5,lwd=3,yaxt="no")
+       # abline(v=quantiles[1], col="blue") #95% credible interval
+       # abline(v=quantiles[5], col="blue")
+       # #dev.off()
+       # 
+       return(list(f1= print(quantiles1,digits=3) )) 
+    
      })
      
+       
+       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      
      stan <- reactive({
        
-       
+      # prior for control and treatment
        
        alpha1 <- 10
        beta1 <- 42
@@ -512,90 +597,78 @@ server <- shinyServer(function(input, output   ) {
        # The Stan model as a string.
        
        model_string <- paste0("// Here we define the data we are going to pass into the model
-
  
-
-data {
-
-  int n;   // Number of trials
-
-  int s;   // Number of successes
-
-  int n1;  // Number of trials
-
-  int s1;  // Number of successes
-
-  }
-
- 
-
-// Here we define what 'unknowns' aka parameters we have.
-
-parameters {
-
-  real<lower=0, upper=1> rate;
-
-  real<lower=0, upper=1> rate1;
-
-}
-
- 
-
-// The generative model
-
- 
-
-model {
-
-  rate ~ beta(",alpha1,",", beta1,") ;    //prior this on trt
-
-  s ~ binomial(n, rate);
-
- 
-
-  rate1 ~ beta(",alpha2,",", beta2,");  //prior this on placebo
-
-  s1 ~ binomial(n1, rate1);
-
-}
-
- 
-
-// Variables have to be defined before they are assigned to
-
- 
-
-generated quantities {
-
-  real d;
-   real r;
-    real oddsratio;
-real prob;
-
-  prob = rate>rate1;
-  r = rate/rate1;
-  d = rate-rate1;
-  oddsratio = (rate/(1-rate)) / (rate1/(1-rate1));
-
-}")
+        data {
+        
+          int n;   // Number of trials
+        
+          int s;   // Number of successes
+        
+          int n1;  // Number of trials
+        
+          int s1;  // Number of successes
+        
+          }
+        
+         
+        
+        // Here we define what 'unknowns' aka parameters we have.
+        
+        parameters {
+        
+          real<lower=0, upper=1> rate;
+        
+          real<lower=0, upper=1> rate1;
+        
+        }
+        
+         
+        
+        // The generative model
+        
+         
+        
+        model {
+        
+          rate ~ beta(",alpha1,",", beta1,") ;    //prior this on trt
+        
+          s ~ binomial(n, rate);
+        
+         
+        
+          rate1 ~ beta(",alpha2,",", beta2,");  //prior this on placebo
+        
+          s1 ~ binomial(n1, rate1);
+        
+        }
+        
+         
+        
+        // Variables have to be defined before they are assigned to
+        
+         
+        
+        generated quantities {
+        
+          real d;
+           real r;
+            real oddsratio;
+        real prob;
+        
+          prob = rate>rate1;
+          r = rate/rate1;
+          d = rate-rate1;
+          oddsratio = (rate/(1-rate)) / (rate1/(1-rate1));
+        
+        }")
           
        #data_list <- list(n = 25, s = 14, n1=25, s1=13)
        # Compiling and producing posterior samples from the model.
+    #stan_samples <- stan(model_code = model_string, data = data_list)
        
-    
-       
-       #stan_samples <- stan(model_code = model_string, data = data_list)
-       
-       
-       
-       
-       mod <- stan_model(model_code = model_string, verbose = TRUE)
-       
-       #~~~~~~~~~~~~~~~~~~~~~~~~~
-       fit <- sampling(mod, data = list(n = 25, s = 14, n1=25, s1=13))
-       #print(fit, digits = 3)
-       
-       return(list(f=fit)) 
+     mod <- stan_model(model_code = model_string, verbose = TRUE)
+     fit <- sampling(mod, data = list(n = 25, s = 14, n1=25, s1=13), refresh=0)
+     return(list(f= print(fit, digits = 3))) 
        
      })
     
@@ -608,7 +681,7 @@ real prob;
     })
     output$reg.summary2 <- renderPrint({
       
-    #  return(fit()$s)
+     return(mcmc()$f1)
       
     })
     output$reg.summary3 <- renderPrint({
