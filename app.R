@@ -276,8 +276,9 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                          
                                          fluidRow(
                                            column(width = 6,
-                                                 div( verbatimTextOutput("reg.summary3"))
+                                                 div( verbatimTextOutput("reg.summary3")),
                                                   # div( verbatimTextOutput("reg.lmm1")),
+                                                 div( verbatimTextOutput("reg.summary4"))
                                                   #           div( verbatimTextOutput("reg.lmm2")),
                                            ))),
                               ) ,
@@ -726,10 +727,14 @@ generated quantities {
   })
   output$reg.summary3 <- renderPrint({
     
-        return(stan2()$fitx)
+        return(stan2()$fitx2)
     
   })
-  
+  output$reg.summary4 <- renderPrint({
+    
+    return(stan2()$res)
+    
+  })
   # --------------------------------------------------------------------------
   # --------------------------------------------------------------------------
   # --------------------------------------------------------------------------
@@ -841,32 +846,32 @@ generated quantities {
     
     m1 <- '
 
-data {                         
-
-int<lower=0> N;                   // number of observations
-
-int<lower=0,upper=1> y[N];        // setting the dependent variable (y) as binary
-
-vector[N] x;                      // independent variable 1
-
-}
-
-
-parameters {
-
-real alpha;                       // intercept
-
-real b_x;                         // beta for x, etc
-
-}
-
-model {
-
-alpha ~ student_t(3,0,2.5);              // you can set priors for all betas
-
-b_x ~   student_t(3,0,2.5);              // if you prefer not to, uniform priors will be used
-
-y ~ bernoulli_logit(alpha + b_x * x  ); // model
+        data {                         
+        
+        int<lower=0> N;                   // number of observations
+        
+        int<lower=0,upper=1> y[N];        // setting the dependent variable (y) as binary
+        
+        vector[N] x;                      // independent variable 1
+        
+        }
+        
+        
+        parameters {
+        
+        real alpha;                       // intercept
+        
+        real b_x;                         // beta for x, etc
+        
+        }
+        
+        model {
+        
+        alpha ~ student_t(3,0,2.5);              // you can set priors for all betas
+        
+        b_x ~   student_t(3,0,2.5);              // if you prefer not to, uniform priors will be used
+        
+        y ~ bernoulli_logit(alpha + b_x * x  ); // model
 
 }'
 
@@ -886,30 +891,78 @@ mod <- stan_model(model_code = m1, verbose = FALSE)
 
 fitx <- sampling(mod, data = data.list, iter = 1000, chains = 4, refresh=0)
 
-
-
-print(fitx, digits = 3)
-
-
-    
-
  
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-  })
+names(fitx) <- c("intercept", "odds ratio" , "lp")
+
+fitx2 <- print(fitx, digits=3)
+# require(sjstats)
+
+
+
+
+#https://cran.r-project.org/web/packages/rstan/vignettes/stanfit-objects.html
+
+## extract alpha and beta with 'permuted = TRUE'
+
+fit_ss <- extract(fitx, permuted = TRUE) # fit_ss is a list
+
+## list fit_ss should have elements with name 'alpha', 'beta', 'lp__'
+
+alpha <- fit_ss$alpha
+
+beta <- fit_ss$b_x
+
+## or extract alpha by just specifying pars = 'alpha'
+
+#alpha2 <- extract(fit, pars = 'alpha', permuted = TRUE)$alpha
+
+
+
+placebo.prob <- 1/(1+exp(-alpha))
+
+quantiles1 = quantile(placebo.prob,c(0.025,0.25,0.5,0.75,0.975))
+
+#print(quantiles1,digits=2)  
+
+
+
+
+
+trt.prob <- 1/(1+exp(-(alpha+beta)))
+
+# trt.prob <- exp(alpha+beta)/(1+exp(alpha+beta)) # same as above
+
+quantiles2 = quantile(trt.prob,c(0.025,0.25,0.5,0.75,0.975))
+
+#print(quantiles2,digits=2)
+
+
+
+
+
+res  <- rbind(quantiles1, quantiles2 )
+rownames(res) <-c( "Grp1 probability","Grp2 probability")
+
+
+
+
+
+
+
+return(list(res= res , fitx2=fitx2)) 
+
+
+
+
+
+
+
+
+
+
+
+ })
   
   # --------------------------------------------------------------------------
   # --------------------------------------------------------------------------
