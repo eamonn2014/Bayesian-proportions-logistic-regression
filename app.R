@@ -3,9 +3,7 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 library(ggplot2)
 library(shiny) 
-library(nlme)
-library(VCA)
-library(MASS)
+require(LearnBayes)
 library(tidyverse)
 library(shinyWidgets)
 library(shinythemes)  # more funky looking apps
@@ -27,7 +25,7 @@ is.even <- function(x){ x %% 2 == 0 } # function to id. odd maybe useful
 # Always remember that the purpose of a parallel-group randomized trial is to compare the parallel groups, 
 # NOT to look at change from baseline.  Baseline should always be an adjustment covariate (only).
 
-require(LearnBayes)
+
 findBeta <- function(quantile1,quantile2,quantile3)
 {
   # find the quantiles specified by quantile1 and quantile2 and quantile3
@@ -151,34 +149,29 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                   
                                   
                                   textInput('vec3', 
-                                            div(h5("Beta parameters for treatment")), "7.17, 15.15"),
+                                            div(h5("Beta parameters for treatment")), "1, 1"),
                                   
                                   textInput('vec4', 
-                                            div(h5("Beta parameters for control")), "5.38, 14.60"),
+                                            div(h5("Beta parameters for control")), "10, 43"),
+                                  
+                                  textInput('n1y1', 
+                                            div(h5("grp1 sample size and successess")), "25, 14"),
+                                  
+                                  textInput('n2y2', 
+                                            div(h5("grp2 sample size and successess")), "25, 13"),
+
+                                  
+                                  
+                                  # n1 = 25 #100 # trt n
                                   # 
-                                  #                             sliderInput("prob2",
-                                  #                                         h5("We believe to be"),
-                                  #                                         min=0, max=1, step=.01, value=.2, ticks=FALSE),
+                                  # y1 = 14 # trt observed responders
                                   # 
-                                  #                             
-                                  #                             sliderInput("prob3",
-                                  #                                         h5("This percentile"),
-                                  #                                         min=0, max=1, step=.01, value=.5, ticks=FALSE),
-                                  #                             
+                                  # n2 = 25 #51  # placebo n
                                   # 
-                                  #                             sliderInput("prob4",
-                                  #                                         h5("We believe to be"),
-                                  #                                         min=0, max=1, step=.01, value=.25, ticks=FALSE),
-                                  #                             
-                                  #                             
-                                  #                             sliderInput("prob5",
-                                  #                                         h5("This percentile"),
-                                  #                                         min=0, max=1, step=.01, value=.9, ticks=FALSE),
-                                  #                             
-                                  #                             
-                                  #                             sliderInput("prob6",
-                                  #                                         h5("We believe to be"),
-                                  #                                         min=0, max=1, step=.01, value=.45, ticks=FALSE),
+                                  # y2 = 13   # placebo observed responders
+                                  
+                                  
+                                  
                                   
                                   
                                   div(h5("References:")),  
@@ -256,34 +249,34 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                        
                               ) ,
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                              tabPanel("3 stan",
-                                       div( verbatimTextOutput("reg.summary")),
+                              tabPanel("3 Bayesian Stan Model",
+                                       #div( verbatimTextOutput("reg.summary")),
                                        h4("Figure 3 xxxxxxxxxxxxxxxxxxxxx."),         
                                        
                                        
-                                       p(strong("xxxxxxxxxxxxxxxxxxxxxxx.
-                                              ")),
+                                       p(strong("Bayesian Monte Carlo Estimates")),
                               ),
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                              tabPanel("4 mcmc", value=3, 
-                                       div( verbatimTextOutput("reg.summary2")),
+                              tabPanel("4 Monte Carlo", value=3, 
+                                      # div( verbatimTextOutput("reg.summary2")),
                                        #    div(plotOutput("res.plot3", width=fig.width2, height=fig.height2)), 
-                                       h4("Figure 4 xxxxxxxxxxxxxxxxxxx. "),         
+                                       h4("Figure 4 Bayesian Monte Carlo Estimates"),         
                               ) ,
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                              tabPanel("5 xxxxxxxxxxxxxxxxx", value=6, 
+                              tabPanel("5 xxxxxxxxxxxxxxxxx", value=7, 
                                        h4("xxxxxxxxxxxxxxxxx."),
                                        
                                        fluidRow(
-                                         column(width = 5,
-                                                #   div( verbatimTextOutput("reg.lmm0")),
+                                         column(width = 7,
+                                                div( verbatimTextOutput("reg.summary")),
+                                                div( verbatimTextOutput("reg.summary2")),
                                                 #   div( verbatimTextOutput("reg.lmm1")),
                                                 # div( verbatimTextOutput("reg.lmm2")),
                                          ),
                                          
                                          fluidRow(
-                                           column(width = 5,
-                                                  # div( verbatimTextOutput("reg.lmm0")),
+                                           column(width = 6,
+                                                #  div( verbatimTextOutput("reg.summary2"))
                                                   # div( verbatimTextOutput("reg.lmm1")),
                                                   #           div( verbatimTextOutput("reg.lmm2")),
                                            ))),
@@ -346,13 +339,21 @@ server <- shinyServer(function(input, output   ) {
     # prob6 <-    input$prob6
     i <- as.numeric(unlist(strsplit(input$vec1,",")))
     j <- as.numeric(unlist(strsplit(input$vec2,",")))
+    
     trt <- as.numeric(unlist(strsplit(input$vec3,",")))
     ctr <- as.numeric(unlist(strsplit(input$vec4,",")))
+    
+    n1y1 <- as.numeric(unlist(strsplit(input$n1y1,",")))
+    n2y2 <- as.numeric(unlist(strsplit(input$n2y2,",")))
+    
     #
     
     return(list( prob1=i[1],prob2=j[1],prob3=i[2],prob4=j[2],prob5=i[3],prob6=j[3],
                  trt.alpha=trt[1], trt.beta=trt[2],
-                 ctr.alpha=ctr[1], ctr.beta=ctr[2]))#, SENN =SENN )) 
+                 ctr.alpha=ctr[1], ctr.beta=ctr[2],
+                 n1=n1y1[1],y1=n1y1[2],
+                 n2=n2y2[1],y2=n2y2[2]
+                 ))#, SENN =SENN )) 
     
     #   return(list( prob1=prob1,prob2=prob2,prob3=prob3,prob4=prob4,prob5=prob5,prob6=prob6))#, SENN =SENN )) 
     
@@ -497,27 +498,22 @@ server <- shinyServer(function(input, output   ) {
     mcmc <- reactive({
       
       
+      sample <- random.sample()
+      a  <- trt.alpha<- sample$trt.alpha
+      b  <- trt.beta<-sample$trt.beta
+      a1 <- sample$ctr.alpha
+      b1 <- sample$ctr.beta
+     
+      n1 <- sample$n1
+      y1 <- sample$y1
+      n2 <- sample$n2
+      y2 <- sample$y2
       
-      
-      a=1
-      b=1
-      a1=10
-      b1=43
-      
-      
-      
-      
-      n1 = 25 #100 # trt n
-      
-      y1 = 14 # trt observed responders
-      
-      n2 = 25 #51  # placebo n
-      
-      y2 = 4   # placebo observed responders
-      
-      
-      
-      
+      n1 <- 25
+      y1 <- 14
+      n2 <- 25
+      y2 <- 13
+     
       
       
       I = 100000                               # simulations
@@ -534,34 +530,42 @@ server <- shinyServer(function(input, output   ) {
       
       
       
-      quantiles1 = quantile(diff,c(0.025,0.25,0.5,0.75,0.975))
-      
-      print(quantiles1,digits=2)  
-      
-      # quantiles = quantile(diff,c(0.025,0.25,0.5,0.75,0.975))
-      
-      print(mean(theta1>theta2),digits=2)  
-      
-      
-      
-      
-      quantiles = quantile(ratio,c(0.025,0.25,0.5,0.75,0.975))
-      
-      print(quantiles,digits=2)  
-      
-      quantiles = quantile(or,c(0.025,0.25,0.5,0.75,0.975))
-      
-      print(quantiles,digits=2)  
-      
       
       quantiles = quantile(diff,c(0.025,0.25,0.5,0.75,0.975))
       
-      print(quantiles,digits=2)  
+      #print(quantiles,digits=2)  
       
       # quantiles = quantile(diff,c(0.025,0.25,0.5,0.75,0.975))
       
-      print(mean(theta1>theta2),digits=2)  
+     
       
+      
+      
+      
+      quantilesr = quantile(ratio,c(0.025,0.25,0.5,0.75,0.975))
+      
+      #  print(quantiles,digits=2)  
+      
+      quantilesor = quantile(or,c(0.025,0.25,0.5,0.75,0.975))
+      
+      #print(quantiles,digits=2)  
+      
+      
+      #quantiles = quantile(diff,c(0.025,0.25,0.5,0.75,0.975))
+      
+      #print(quantiles,digits=2)  
+      
+      # quantiles = quantile(diff,c(0.025,0.25,0.5,0.75,0.975))
+      
+      #print(mean(theta1>theta2),digits=2)  
+      
+      
+      res  <- rbind(quantiles, quantilesr, quantilesor)
+      rownames(res) <-c( "Grp1-Grp2","Grp1/Grp2","OR Grp1:Grp2")
+      
+        
+      
+      #res
       # VISUALIZATION
       # plot(density(diff),
       #      xlab="theta1 - theta2",
@@ -573,7 +577,10 @@ server <- shinyServer(function(input, output   ) {
       # abline(v=quantiles[5], col="blue")
       # #dev.off()
       # 
-      return(list(f1= print(quantiles1,digits=3) )) 
+      cat("Probability theta1 > theta2")
+      print(mean(theta1>theta2),digits=2)  
+      #print(res,digits=3)
+      return(list(f1= res )) 
       
     })
     
@@ -586,13 +593,26 @@ server <- shinyServer(function(input, output   ) {
   
   stan <- reactive({
     
+    sample <- random.sample()
+    a  <- trt.alpha<- sample$trt.alpha
+    b  <- trt.beta<-sample$trt.beta
+    a1 <- sample$ctr.alpha
+    b1 <- sample$ctr.beta
+    n <- n1 <- s <- s1 <- NULL
+    n1 <- sample$n1
+    y1 <- sample$y1
+    n2 <- sample$n2
+    y2 <- sample$y2
     
     
-    alpha1 <- 10
-    beta1 <- 42
-    alpha2 <- 10
-    beta2 <- 43
+    alpha1 <- a
+    beta1 <- b
+    alpha2 <- a1
+    beta2 <- b1
     
+  
+    
+  
     library(rstan)
     
     
@@ -654,10 +674,10 @@ model {
 
 generated quantities {
 
-  real d;
+   real d;
    real r;
-    real oddsratio;
-real prob;
+   real oddsratio;
+   real prob;
 
   prob = rate>rate1;
   r = rate/rate1;
@@ -676,12 +696,18 @@ real prob;
     
     
     
-    mod <- stan_model(model_code = model_string, verbose = TRUE)
+    mod <- stan_model(model_code = model_string, verbose = FALSE)
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~
     fit <- sampling(mod, data = list(n = 25, s = 14, n1=25, s1=13), refresh=0)
     #print(fit, digits = 3)
+   
+    
+    names(fit) <- c("proportion Grp1", "proportion Grp2","Grp1-Grp2","Grp1/Grp2","OR Grp1:Grp2" , "p(Grp1>Grp2)", "lp")
+    
     fit1 <- print(fit, digits=3)
+   # require(sjstats)
+    
     return(list(f=fit1)) 
     
   })
