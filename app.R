@@ -276,7 +276,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                          
                                          fluidRow(
                                            column(width = 6,
-                                                #  div( verbatimTextOutput("reg.summary2"))
+                                                 div( verbatimTextOutput("reg.summary3"))
                                                   # div( verbatimTextOutput("reg.lmm1")),
                                                   #           div( verbatimTextOutput("reg.lmm2")),
                                            ))),
@@ -726,7 +726,7 @@ generated quantities {
   })
   output$reg.summary3 <- renderPrint({
     
-    #     return(fit()$ci)
+        return(stan2()$fitx)
     
   })
   
@@ -735,100 +735,180 @@ generated quantities {
   # --------------------------------------------------------------------------
   # tab 1 plot trt and plot ctrl
   
-  output$reg.plot1 <- renderPlot({         
+  stan2 <- reactive({      
     
-    #    trial <- make.data()$trial
-    #    sample <- random.sample()
-    #    N <- make.data()$N
-    #    stats <- stats()
-    #    beta.treatment <-  sample$trt 
-    #    # for plotting
-    #    diff <- trial$y.1observed - trial$y.0observed
-    #    mi <-  min(diff)*1.2    # for plotting axis
-    #    ma <-  max(diff)*1.2    # for plotting axis
-    #    
-    #     # treated 
-    #     A=stats()$A  #prop
-    #     AT=stats()$AT  #%
-    #     C=stats()$C    
-    #     
-    #     CT=stats()$CT
-    #     AN=stats()$AN   # treated count
-    #     CN=stats()$CN
-    #     # ---------------------------------------------------------------------------
-    #     T.SENN =stats()$T.SENN   # proportion at follow up less than clin relv diff
-    #     C.SENN =stats()$C.SENN
-    #     
-    #     par(mfrow=c(1,2))
-    #    # ---------------------------------------------------------------------------
-    #    xup <-  max(table(trial$treat))  # new
-    #   
-    #    # select treated
-    #    trt <- trial[trial$treat==1,]
-    #    trt$diff <- trt$delta.observed  
-    # 
-    #    foo <- sort(trt[,"diff"])
-    #    # ---------------------------------------------------------------------------
-    #    foo <- data.frame(foo, col1=NA, col2=NA)
-    #    foo$col1 =   ifelse(foo$foo <=    beta.treatment, "blue" , "black")     # -ve trt effect cols   
-    #    foo$col2 =   ifelse(foo$foo >     beta.treatment, "blue" , "black")     # +ve trt effect cols
-    #    # ---------------------------------------------------------------------------
-    #          
-    #       if ( beta.treatment <  0) {
-    #         foo$colz = foo$col1
-    #       tex <- paste0("Treated patients \n N= ",AN,", No of responders= ",A," (",AT,"%), non responders=",AN-A," (",100-AT,"%)")
-    #       } else {
-    #         foo$colz = foo$col2
-    #         tex <- paste0("Treated patients \n N= ",AN,", No of responders= ",A," (",100-AT,"%), non responders=",AN-A," (",AT,"%)")  #AN-A A
-    #       }
-    #    
-    #    plot(foo$foo, main=tex,  
-    #         ylab= "follow up - baseline", xlab="Individual subjects ordered by observed response", 
-    #         xlim=c(0, xup), ylim=c(mi,ma), #length(trt[,"diff"])
-    #         col=  foo$colz)
-    #    grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
-    #    abline(h=0)
-    #  # abline(h=input$trt, lty=2)
-    #    abline(h=(input$trt), col=c("forestgreen"), lty="dashed", lwd=c(2) ) 
-    #    
-    #    title(main = "", sub = "Patients observed to respond coloured blue, otherwise black; dashed horizontal line denotes the true treatment effect, treated only",  
-    #          adj=0,cex.sub = 0.75, font.sub = 1, col.sub = "black"
-    #          
-    #    )
-    #    #-------------------------------------------------------------------------
-    #    # ---------------------------------------------------------------------------
-    #    # ---------------------------------------------------------------------------
-    #    trt <- trial[trial$treat==0,]
-    #    trt$diff <- trt$delta.observed  
-    #    foo <- sort(trt[,"diff"])
-    #    # ---------------------------------------------------------------------------
-    #    foo <- data.frame(foo, col1=NA, col2=NA)
-    #    foo$col1 =   ifelse(foo$foo <=  beta.treatment, "blue" , "black")         
-    #    foo$col2 =   ifelse(foo$foo >   beta.treatment, "blue" , "black")   
-    #    # ---------------------------------------------------------------------------
-    #    
-    #    if ( beta.treatment <  0) {foo$colz = foo$col1
-    #    tex <- paste0("Control patients \n N= ",CN,", No of responders= ",C," (",CT,"%), non responders=",CN-C," (",100-CT,"%)")
-    #    } else {
-    #      foo$colz = foo$col2
-    #      tex <- paste0("Control patients \n N= ",CN,", No of responders= ",C," (",CT,"%), non responders=",CN-C," (",100-CT,"%)")   #CN-C 
-    #    }
-    #    # ---------------------------------------------------------------------------
-    #    plot(foo$foo, main=tex,
-    #         ylab= "follow up - baseline", xlab="Individual subjects ordered by observed response", 
-    #         xlim=c(0, xup), ylim=c(mi,ma), #length(trt[,"diff"])
-    #         col=  foo$colz)
-    #    grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
-    #    
-    #    abline(h=0)
-    #    #abline(h=input$trt, lty=2)
-    #    abline(h=(input$trt), col=c("forestgreen"), lty="dashed", lwd=c(2) ) 
-    #    title(main = "", sub = "Patients observed to respond coloured blue, otherwise black; dashed horizontal line denotes the true treatment effect, treated only",  
-    #          adj=0,cex.sub = 0.75, font.sub = 1, col.sub = "black"
-    #          
-    #    )
-    # # ---------------------------------------------------------------------------
-    #    par(mfrow=c(1,1))
+   
+    sample <- random.sample()
+    a  <- trt.alpha<- sample$trt.alpha
+    b  <- trt.beta<-sample$trt.beta
+    a1 <- sample$ctr.alpha
+    b1 <- sample$ctr.beta
+    n <- n1 <- s <- s1 <- NULL
+    n1 <- sample$n1
+    y1 <- sample$y1
+    n2 <- sample$n2
+    y2 <- sample$y2
+    
+    
+    alpha1 <- a
+    beta1 <- b
+    alpha2 <- a1
+    beta2 <- b1
+    
+    
+    library(reshape2)
+    
+    Table <- matrix(c(y1,y2,n1-y1,n2-y2), 2, 2, byrow=TRUE)
+    
+    rownames(Table) <- c('y', 'n')
+    
+    colnames(Table) <- c('Drug', 'Placebo')
+    
+    melt(Table)
+    
+    
+    
+    d = as.data.frame(as.table(as.matrix(Table)))
+    
+    
+    
+    # from stack exchange
+    
+    countsToCases <- function(x, countcol = "Freq") {
+      
+      # Get the row indices to pull from x
+      
+      idx <- rep.int(seq_len(nrow(x)), x[[countcol]])
+      
+      
+      
+      # Drop count column
+      
+      x[[countcol]] <- NULL
+      
+      
+      
+      # Get the rows from x
+      
+      x[idx, ]
+      
+    }
+    
+    
+    
+    dd <- countsToCases(d)
+    
+    rownames(dd)<-NULL
+    
+    head(dd)
+    
+    
+    
+    dd$y <- ifelse(dd$Var1 %in% "y",1,0)
+    
+    dd$x <- ifelse(dd$Var2 %in% "Drug",1,0)
+    
+    
+    
+    dd$Var1 <- dd$Var2 <-NULL
+    
+    names(dd)[names(dd)=="Var2"] <- "trt"
+    
+    head(dd)
+    
+    with(dd, table(dd$x, dd$y))
+    
+    
+    
+    y <- dd$y; x <- dd$x
+    
+    
+    
+    
+    
+    
+    
+    
+    #https://raw.githubusercontent.com/danilofreire/r-scripts/master/stan-logistic-regression.R
+    
+    
+    
+    # guidance on logistic regression priors
+    
+    #https://github.com/stan-dev/stan/wiki/Prior-Choice-Recommendations
+    
+    
+    
+    m1 <- '
+
+data {                         
+
+int<lower=0> N;                   // number of observations
+
+int<lower=0,upper=1> y[N];        // setting the dependent variable (y) as binary
+
+vector[N] x;                      // independent variable 1
+
+}
+
+
+parameters {
+
+real alpha;                       // intercept
+
+real b_x;                         // beta for x, etc
+
+}
+
+model {
+
+alpha ~ student_t(3,0,2.5);              // you can set priors for all betas
+
+b_x ~   student_t(3,0,2.5);              // if you prefer not to, uniform priors will be used
+
+y ~ bernoulli_logit(alpha + b_x * x  ); // model
+
+}'
+
+
+
+# Create a list with the chosen variables
+
+data.list <- list(N = nrow(dd), y = dd$y, x = dd$x )
+
+#str(data.list)
+
+
+
+# Estimate the model
+
+mod <- stan_model(model_code = m1, verbose = FALSE)
+
+fitx <- sampling(mod, data = data.list, iter = 1000, chains = 4, refresh=0)
+
+
+
+print(fitx, digits = 3)
+
+
+    
+
+ 
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
   })
   
   # --------------------------------------------------------------------------
