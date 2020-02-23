@@ -158,7 +158,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                             div(h5("grp1 sample size and successess")), "25, 14"),
                                   
                                   textInput('n2y2', 
-                                            div(h5("grp2 sample size and successess")), "25, 13"),
+                                            div(h5("grp2 sample size and successess")), "25, 4"),
 
                                   
                                   
@@ -344,10 +344,11 @@ server <- shinyServer(function(input, output   ) {
     trt <- as.numeric(unlist(strsplit(input$vec3,",")))
     ctr <- as.numeric(unlist(strsplit(input$vec4,",")))
     
-    n1y1 <- as.numeric(unlist(strsplit(input$n1y1,",")))
+    n1y1 <- as.numeric(unlist(strsplit(input$n1y1,","))) #trt
     n2y2 <- as.numeric(unlist(strsplit(input$n2y2,",")))
     
     #
+  
     
     return(list( prob1=i[1],prob2=j[1],prob3=i[2],prob4=j[2],prob5=i[3],prob6=j[3],
                  trt.alpha=trt[1], trt.beta=trt[2],
@@ -505,15 +506,15 @@ server <- shinyServer(function(input, output   ) {
       a1 <- sample$ctr.alpha
       b1 <- sample$ctr.beta
      
-      n1 <- sample$n1
+      n1 <- sample$n1  #trt
       y1 <- sample$y1
       n2 <- sample$n2
       y2 <- sample$y2
       
-      n1 <- 25
-      y1 <- 14
-      n2 <- 25
-      y2 <- 13
+      # n1 <- 25
+      # y1 <- 14
+      # n2 <- 25
+      # y2 <- 13
      
       
       
@@ -600,7 +601,7 @@ server <- shinyServer(function(input, output   ) {
     a1 <- sample$ctr.alpha
     b1 <- sample$ctr.beta
     n <- n1 <- s <- s1 <- NULL
-    n1 <- sample$n1
+    n1 <- sample$n1  #trt
     y1 <- sample$y1
     n2 <- sample$n2
     y2 <- sample$y2
@@ -657,7 +658,7 @@ model {
 
   rate ~ beta(",alpha1,",", beta1,") ;    //prior this on trt
 
-  s ~ binomial(n, rate);
+  s ~ binomial(n, rate);  #14/25
 
  
 
@@ -698,9 +699,12 @@ generated quantities {
     
     
     mod <- stan_model(model_code = model_string, verbose = FALSE)
-    
+    # n1 <- sample$n1  #trt
+    # y1 <- sample$y1
+    # n2 <- sample$n2
+    # y2 <- sample$y2
     #~~~~~~~~~~~~~~~~~~~~~~~~~
-    fit <- sampling(mod, data = list(n = 25, s = 14, n1=25, s1=13), refresh=0)
+    fit <- sampling(mod, data = list(n = n1, s = y1, n1=n2, s1=y2), refresh=0)  #25 14 25 4
     #print(fit, digits = 3)
    
     
@@ -844,38 +848,55 @@ generated quantities {
     
     
     
-    m1 <- '
-
-        data {                         
-        
-        int<lower=0> N;                   // number of observations
-        
-        int<lower=0,upper=1> y[N];        // setting the dependent variable (y) as binary
-        
-        vector[N] x;                      // independent variable 1
-        
-        }
-        
-        
-        parameters {
-        
-        real alpha;                       // intercept
-        
-        real b_x;                         // beta for x, etc
-        
-        }
-        
-        model {
-        
-        alpha ~ student_t(3,0,2.5);              // you can set priors for all betas
-        
-        b_x ~   student_t(3,0,2.5);              // if you prefer not to, uniform priors will be used
-        
-        y ~ bernoulli_logit(alpha + b_x * x  ); // model
-
+#     m1 <- '
+# 
+#         data {                         
+#         
+#         int<lower=0> N;                   // number of observations
+#         
+#         int<lower=0,upper=1> y[N];        // setting the dependent variable (y) as binary
+#         
+#         vector[N] x;                      // independent variable 1
+#         
+#         }
+#         
+#         
+#         parameters {
+#         
+#         real alpha;                       // intercept
+#         
+#         real b_x;                         // beta for x, etc
+#         
+#         }
+#         
+#         model {
+#         
+#         alpha ~ normal(-.88, .25) ; // cauchy(0,10)  uniform(-1, 1);  you can set priors for all betas  student_t(3,0,2.5);   normal(0, 10);
+#         
+#         b_x ~ normal(.23,.395)  ; // cauchy(0,2.5) student_t(3,0,2.5);  if you prefer not to, uniform priors will be used
+#         
+#         y ~ bernoulli_logit(alpha + b_x * x  ); // model
+# 
+# }'
+#     
+    
+    
+ m1 <- 'data {
+  int N;  // number of items
+  int y[N];  // binary outcome for item n
+  real x[N];  // predictive feature for item n
+}
+parameters {
+  real alpha;  // intercept
+  real beta;  // slope
+}
+model {
+  alpha ~ student_t(3,0,2.5);  // weakly informative normal(0,5);cauchy(0,2.5); 
+  for (n in 1:N)
+    y[n] ~ bernoulli(inv_logit(alpha + beta * x[n]));
 }'
 
-
+  
 
 # Create a list with the chosen variables
 
@@ -893,7 +914,7 @@ fitx <- sampling(mod, data = data.list, iter = 1000, chains = 4, refresh=0)
 
  
 
-names(fitx) <- c("intercept", "odds ratio" , "lp")
+names(fitx) <- c("intercept", "log odds ratio" , "lp")
 
 fitx2 <- print(fitx, digits=3)
 # require(sjstats)
@@ -911,7 +932,7 @@ fit_ss <- extract(fitx, permuted = TRUE) # fit_ss is a list
 
 alpha <- fit_ss$alpha
 
-beta <- fit_ss$b_x
+beta <- fit_ss$beta
 
 ## or extract alpha by just specifying pars = 'alpha'
 
@@ -920,32 +941,19 @@ beta <- fit_ss$b_x
 
 
 placebo.prob <- 1/(1+exp(-alpha))
-
 quantiles1 = quantile(placebo.prob,c(0.025,0.25,0.5,0.75,0.975))
-
-#print(quantiles1,digits=2)  
-
-
-
 
 
 trt.prob <- 1/(1+exp(-(alpha+beta)))
-
 # trt.prob <- exp(alpha+beta)/(1+exp(alpha+beta)) # same as above
-
 quantiles2 = quantile(trt.prob,c(0.025,0.25,0.5,0.75,0.975))
 
-#print(quantiles2,digits=2)
 
+d <- trt.prob - placebo.prob
+quantiles3 = quantile(d,c(0.025,0.25,0.5,0.75,0.975))
 
-
-
-
-res  <- rbind(quantiles1, quantiles2 )
-rownames(res) <-c( "Grp1 probability","Grp2 probability")
-
-
-
+res  <- rbind(quantiles1, quantiles2, quantiles3 )
+rownames(res) <-c( "Grp1 probability","Grp2 probability", "Grp3 probability")
 
 
 
