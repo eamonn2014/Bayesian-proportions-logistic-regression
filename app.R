@@ -17,7 +17,7 @@ fig.width3 <- 800
 fig.height3 <- 545
 p1 <- function(x) {formatC(x, format="f", digits=1)}
 p2 <- function(x) {formatC(x, format="f", digits=2)}
-options(width=100)
+options(width=140)
 set.seed(12345) # reproducible
 
 pop=1e6 # this is the population size we take sample from
@@ -149,30 +149,19 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                   
                                   
                                   textInput('vec3', 
-                                            div(h5("Beta parameters for treatment")), "1, 1"),
+                                            div(h5("Beta parameters for treatment prior")), "1, 1"),
                                   
                                   textInput('vec4', 
-                                            div(h5("Beta parameters for control")), "10, 43"),
+                                            div(h5("Beta parameters for control prior")), "10, 43"),
                                   
                                   textInput('n1y1', 
                                             div(h5("grp1 sample size and successess")), "25, 14"),
                                   
                                   textInput('n2y2', 
                                             div(h5("grp2 sample size and successess")), "25, 4"),
-
-                                  
-                                  
-                                  # n1 = 25 #100 # trt n
-                                  # 
-                                  # y1 = 14 # trt observed responders
-                                  # 
-                                  # n2 = 25 #51  # placebo n
-                                  # 
-                                  # y2 = 13   # placebo observed responders
-                                  
-                                  
-                                  
-                                  
+ 
+                                  textInput('prio', 
+                                            div(h5("type in prior for intercept...examples\nnormal(0,5)\ncauchy(0,2.5)\n")), "student_t(3,0,2.5)"),
                                   
                                   div(h5("References:")),  
                                   
@@ -264,28 +253,33 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                               ) ,
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                               tabPanel("5 xxxxxxxxxxxxxxxxx", value=7, 
-                                       h4("xxxxxxxxxxxxxxxxx."),
+                                       h4("STAN Bayesian modelling proportions"),
                                        
                                        fluidRow(
-                                         column(width = 7,
+                                         column(width = 8,
                                                 div( verbatimTextOutput("reg.summary")),
+                                                h4("Monte Carlo approach, base R"),
                                                 div( verbatimTextOutput("reg.summary2")),
                                                 #   div( verbatimTextOutput("reg.lmm1")),
                                                 # div( verbatimTextOutput("reg.lmm2")),
-                                         ),
-                                         
-                                         fluidRow(
-                                           column(width = 6,
-                                                 div( verbatimTextOutput("reg.summary3")),
+                                      # ),
+                                         # 
+                                       #fluidRow(
+                                        #column(width = 8,
+                                                  h4("STAN logistic regression modelling"),
+                                               #  div( verbatimTextOutput("reg.summary3")),
                                                   # div( verbatimTextOutput("reg.lmm1")),
+                                              #   h4("STAN logistic regression probabilities"),
                                                  div( verbatimTextOutput("reg.summary4"))
                                                   #           div( verbatimTextOutput("reg.lmm2")),
-                                           ))),
+                                          ))
+                                      # ),
                               ) ,
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                               tabPanel("6 xxxxxxxxxxxxxxxxxxxxxxx", value=6, 
                                        # div(plotOutput("reg.plot4", width=fig.width, height=fig.height)), 
                                        h4("xxxxxxxxxxxxxxxxxxxxxxx."),         
+                                       div(plotOutput("dplot1", width=fig.width, height=fig.height)),  
                                        
                                        fluidRow(
                                          column(12,
@@ -310,6 +304,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                               ) ,
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                               tabPanel("7 Data", value=3, 
+                                       div(plotOutput("dplot2", width=fig.width, height=fig.height)),  
                                        #  DT::dataTableOutput("table1"),
                                        
                               ) 
@@ -347,6 +342,7 @@ server <- shinyServer(function(input, output   ) {
     n1y1 <- as.numeric(unlist(strsplit(input$n1y1,","))) #trt
     n2y2 <- as.numeric(unlist(strsplit(input$n2y2,",")))
     
+    prio <- as.character(input$prio)
     #
   
     
@@ -354,10 +350,8 @@ server <- shinyServer(function(input, output   ) {
                  trt.alpha=trt[1], trt.beta=trt[2],
                  ctr.alpha=ctr[1], ctr.beta=ctr[2],
                  n1=n1y1[1],y1=n1y1[2],
-                 n2=n2y2[1],y2=n2y2[2]
-                 ))#, SENN =SENN )) 
-    
-    #   return(list( prob1=prob1,prob2=prob2,prob3=prob3,prob4=prob4,prob5=prob5,prob6=prob6))#, SENN =SENN )) 
+                 n2=n2y2[1],y2=n2y2[2], prio=prio
+                 )) 
     
   })
   
@@ -370,16 +364,14 @@ server <- shinyServer(function(input, output   ) {
     prob1 <-    sample$prob1
     prob2 <-    sample$prob2
     prob3 <-    sample$prob3
-    prob4<-     sample$prob4
+    prob4<-     sample$prob4 
     prob5<-     sample$prob5
     prob6 <-    sample$prob6
-    
-    
-    
+    prio <- sample$prio
     
     quantile1 <- list(p=prob1, x=prob2)    # we believe the median of the prior is 0.85
-    quantile2 <- list(p=prob3, x=prob4) # we believe the 99.999th percentile of the prior is 0.95
-    quantile3 <- list(p=prob5, x=prob6) #
+    quantile2 <- list(p=prob3, x=prob4)    # we believe the 99.999th percentile of the prior is 0.95
+    quantile3 <- list(p=prob5, x=prob6)    #
     
     B <- findBeta(quantile1,quantile2,quantile3)
     
@@ -394,20 +386,7 @@ server <- shinyServer(function(input, output   ) {
   }) 
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # ANCOVA
-  fit <- reactive({
-    
-    # d <- make.data()$d
-    # f0 <- lm(y.1observed ~ y.0observed + treat, d)
-    # s <- summary(f0)
-    # ci <- confint(f0)
-    # 
-    # return(list(s=s, ci=ci, f0=f0 ))
-  })     
-  
-  
-  #For example, to find the best Beta prior for the proportion of individuals who like chocolate, where you believe the most likely value of the proportion is 0.85,
-  #and the value is almost definitely between 0.60 and 0.95, you can type:
+ 
   
   output$ancova.plot <- renderPlot({         
     
@@ -423,6 +402,7 @@ server <- shinyServer(function(input, output   ) {
     prob4<-     sample$prob4
     prob5<-     sample$prob5
     prob6 <-    sample$prob6
+   # prio <- sample$prio
     
     #actual quantiles
     q <- qbeta(c(prob1, prob3, prob5), a,b)  
@@ -436,35 +416,7 @@ server <- shinyServer(function(input, output   ) {
           ),
           ylab = "Density", xlim=c(0.0,1), #ylim=c(0,5),
     )
-    
-    
-    #get quantiels of the beta distribution
-    
-    
-    # text(x=0, y = NULL, "xxx",   adj = NULL,
-    #     pos = NULL, offset = 0.5, vfont = NULL,
-    #     cex = 1, col = NULL)
-    
-    
-    #  we believe the median of the prior is 0.25
-    
-    # we believe the 90th percentile of the prior is 0.45
-    
-    # we believe the 10th percentile of the prior is 0.2
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+  
   })
   
   ##
@@ -477,6 +429,7 @@ server <- shinyServer(function(input, output   ) {
     trt.beta<-sample$trt.beta
     ctr.alpha<- sample$ctr.alpha
     ctr.beta<-sample$ctr.beta
+    #prio <- sample$prio
     
     par(bg = 'grey')
     curve(dbeta(x, trt.alpha, trt.beta),col = "blue", xlab = c("Prior fot treatment, proportion of successess"), 
@@ -511,61 +464,36 @@ server <- shinyServer(function(input, output   ) {
       n2 <- sample$n2
       y2 <- sample$y2
       
-      # n1 <- 25
-      # y1 <- 14
-      # n2 <- 25
-      # y2 <- 13
-     
-      
-      
+    
       I = 100000                               # simulations
       
       theta1 = rbeta(I, y1+a, n1-y1+b)        # incorp. prior for trt
-      
       theta2 = rbeta(I, y2+a1, n2-y2+b1)      # incorp. prior for placebo
-      
       diff = theta1-theta2                    # simulated differences
-      
       ratio = theta1/theta2 
-      
       or <- (theta1/ (1-theta1)) / (theta2/(1-theta2))
-      
-      
-      
-      
-      quantiles = quantile(diff,c(0.025,0.25,0.5,0.75,0.975))
-      
-      #print(quantiles,digits=2)  
-      
-      # quantiles = quantile(diff,c(0.025,0.25,0.5,0.75,0.975))
-      
-     
-      
-      
-      
-      
-      quantilesr = quantile(ratio,c(0.025,0.25,0.5,0.75,0.975))
-      
-      #  print(quantiles,digits=2)  
-      
-      quantilesor = quantile(or,c(0.025,0.25,0.5,0.75,0.975))
-      
-      #print(quantiles,digits=2)  
-      
-      
-      #quantiles = quantile(diff,c(0.025,0.25,0.5,0.75,0.975))
-      
-      #print(quantiles,digits=2)  
-      
-      # quantiles = quantile(diff,c(0.025,0.25,0.5,0.75,0.975))
-      
-      #print(mean(theta1>theta2),digits=2)  
-      
-      
-      res  <- rbind(quantiles, quantilesr, quantilesor)
-      rownames(res) <-c( "Grp1-Grp2","Grp1/Grp2","OR Grp1:Grp2")
+      ptrt <- theta1>theta2
       
         
+      f <- data.frame(cbind( diff, ratio, or ,ptrt, theta1, theta2))
+      
+      rnamez <- c( "trt-ctrl","trt/ctrl", "odds ratio trt:ctrl", "p(trt>ctrl)",
+                  "p(y=1|trt)","p(y=1|ctrl)" )
+      cnamez <- c("Mean","2.5%","25%","50%","75%","97.5%")
+      
+           clean <- function(x) { c(mean(x), quantile(x,c(.025, 0.25, 0.5, 0.75, 0.975))) }
+      
+      x <- apply(f, 2, clean)
+      
+      z <- t(x)
+      
+      rownames(z) <- rnamez
+      colnames(z) <- cnamez
+      
+    
+      
+      
+      
       
       #res
       # VISUALIZATION
@@ -579,10 +507,10 @@ server <- shinyServer(function(input, output   ) {
       # abline(v=quantiles[5], col="blue")
       # #dev.off()
       # 
-      cat("Probability theta1 > theta2")
-      print(mean(theta1>theta2),digits=2)  
+    #  cat("Probability theta1 > theta2")
+    #  print(mean(theta1>theta2),digits=2)  
       #print(res,digits=3)
-      return(list(f1= res )) 
+      return(list(f1= z )) 
       
     })
     
@@ -612,9 +540,7 @@ server <- shinyServer(function(input, output   ) {
     alpha2 <- a1
     beta2 <- b1
     
-  
-    
-  
+   
     library(rstan)
     
     
@@ -622,111 +548,95 @@ server <- shinyServer(function(input, output   ) {
     
     model_string <- paste0("// Here we define the data we are going to pass into the model
 
- 
+        data {
+        
+          int n;   // Number of trials
+          int s;   // Number of successes
+          int n1;  // Number of trials
+          int s1;  // Number of successes
+        
+          }
+        
+         
+        
+        // Here we define what 'unknowns' aka parameters we have.
+        
+        parameters {
+        
+          real<lower=0, upper=1> rate;
+          real<lower=0, upper=1> rate1;
+        
+        }
+        
+        // The generative model
+        
+        model {
+        
+          rate ~ beta(",alpha1,",", beta1,") ;    //prior this on trt
+          s ~ binomial(n, rate);  #14/25
+        
+          rate1 ~ beta(",alpha2,",", beta2,");  //prior this on placebo
+          s1 ~ binomial(n1, rate1);
+        
+        }
+        
+        // Variables have to be defined before they are assigned to
+        
+        generated quantities {
+        
+           real d;
+           real r;
+           real oddsratio;
+           real prob;
+        
+           prob = rate>rate1;
+           r = rate/rate1;
+           d = rate-rate1;
+           oddsratio = (rate/(1-rate)) / (rate1/(1-rate1));
+        
+        }")
 
-data {
-
-  int n;   // Number of trials
-
-  int s;   // Number of successes
-
-  int n1;  // Number of trials
-
-  int s1;  // Number of successes
-
-  }
-
- 
-
-// Here we define what 'unknowns' aka parameters we have.
-
-parameters {
-
-  real<lower=0, upper=1> rate;
-
-  real<lower=0, upper=1> rate1;
-
-}
-
- 
-
-// The generative model
-
- 
-
-model {
-
-  rate ~ beta(",alpha1,",", beta1,") ;    //prior this on trt
-
-  s ~ binomial(n, rate);  #14/25
-
- 
-
-  rate1 ~ beta(",alpha2,",", beta2,");  //prior this on placebo
-
-  s1 ~ binomial(n1, rate1);
-
-}
-
- 
-
-// Variables have to be defined before they are assigned to
-
- 
-
-generated quantities {
-
-   real d;
-   real r;
-   real oddsratio;
-   real prob;
-
-  prob = rate>rate1;
-  r = rate/rate1;
-  d = rate-rate1;
-  oddsratio = (rate/(1-rate)) / (rate1/(1-rate1));
-
-}")
     
-    #data_list <- list(n = 25, s = 14, n1=25, s1=13)
-    # Compiling and producing posterior samples from the model.
-    
-    
-    
-    #stan_samples <- stan(model_code = model_string, data = data_list)
-    
-    
-    
-    
-    mod <- stan_model(model_code = model_string, verbose = FALSE)
-    # n1 <- sample$n1  #trt
-    # y1 <- sample$y1
-    # n2 <- sample$n2
-    # y2 <- sample$y2
-    #~~~~~~~~~~~~~~~~~~~~~~~~~
-    fit <- sampling(mod, data = list(n = n1, s = y1, n1=n2, s1=y2), refresh=0)  #25 14 25 4
-    #print(fit, digits = 3)
    
     
-    names(fit) <- c("proportion Grp1", "proportion Grp2","Grp1-Grp2","Grp1/Grp2","OR Grp1:Grp2" , "p(Grp1>Grp2)", "lp")
+    mod <- stan_model(model_code = model_string, verbose = FALSE)
+    fit <- sampling(mod, data = list(n = n1, s = y1, n1=n2, s1=y2), refresh=0, verbose = FALSE)   
+    names(fit) <- c("proportion resp Trt", "proportion resp Ctrl","Trt-Ctrl","Trt/Ctrl","Odds Ratio Trt:Ctrl" , "p(Trt>Ctrl)", "lp")
+   # fit1 <- print(fit, digits=3)
     
-    fit1 <- print(fit, digits=3)
-   # require(sjstats)
     
-    return(list(f=fit1)) 
+    f <- as.matrix(fit)
     
+    f <- f[,c(3,4,5,6,1,2)]
+    
+    rnamez <- c("trt-ctrl","trt/ctrl", "odds ratio trt:ctrl", "p(trt>ctrl)",
+                "p(y=1|trt)","p(y=1|ctrl)")
+    cnamez <- c("Mean","2.5%","25%","50%","75%","97.5%")
+    
+    clean <- function(x) { c(mean(x), quantile(x,c(.025, 0.25, 0.5, 0.75, 0.975))) }
+    
+    x <- apply(f, 2, clean)
+    
+    z <- t(x)
+    
+    rownames(z) <- rnamez
+    
+    colnames(z) <- cnamez
+    
+    return(list(f=z)) 
+ 
   })
   
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   output$reg.summary <- renderPrint({
     
-    return(stan()$f)
+    return(print(stan()$f, digits=4))
     
   })
   output$reg.summary2 <- renderPrint({
     
-       return(mcmc()$f1)
+       return(print(mcmc()$f1, digits=4))
     
   })
   output$reg.summary3 <- renderPrint({
@@ -736,7 +646,22 @@ generated quantities {
   })
   output$reg.summary4 <- renderPrint({
     
-    return(stan2()$res)
+    return(print(stan2()$res, digits=4))
+    
+  })
+  
+  
+  
+  
+  output$dplot1 <- renderPlot({  
+    
+    return(stan2()$dplot1)
+    
+  })
+  
+  output$dplot2 <- renderPlot({  
+    
+    return(stan2()$dplot2)
     
   })
   # --------------------------------------------------------------------------
@@ -757,6 +682,7 @@ generated quantities {
     y1 <- sample$y1
     n2 <- sample$n2
     y2 <- sample$y2
+    prio <- sample$prio
     
     
     alpha1 <- a
@@ -768,322 +694,198 @@ generated quantities {
     library(reshape2)
     
     Table <- matrix(c(y1,y2,n1-y1,n2-y2), 2, 2, byrow=TRUE)
-    
     rownames(Table) <- c('y', 'n')
-    
     colnames(Table) <- c('Drug', 'Placebo')
-    
     melt(Table)
     
-    
-    
     d = as.data.frame(as.table(as.matrix(Table)))
-    
-    
-    
-    # from stack exchange
+      # from stack exchange
     
     countsToCases <- function(x, countcol = "Freq") {
-      
       # Get the row indices to pull from x
-      
       idx <- rep.int(seq_len(nrow(x)), x[[countcol]])
-      
-      
-      
       # Drop count column
-      
       x[[countcol]] <- NULL
-      
-      
-      
       # Get the rows from x
-      
       x[idx, ]
-      
     }
     
-    
-    
+
     dd <- countsToCases(d)
-    
     rownames(dd)<-NULL
-    
     head(dd)
     
-    
-    
     dd$y <- ifelse(dd$Var1 %in% "y",1,0)
-    
     dd$x <- ifelse(dd$Var2 %in% "Drug",1,0)
-    
-    
-    
     dd$Var1 <- dd$Var2 <-NULL
     
     names(dd)[names(dd)=="Var2"] <- "trt"
-    
     head(dd)
-    
     with(dd, table(dd$x, dd$y))
-    
-    
-    
     y <- dd$y; x <- dd$x
-    
-    
-    
-    
-    
-    
-    
-    
+      
     #https://raw.githubusercontent.com/danilofreire/r-scripts/master/stan-logistic-regression.R
-    
-    
-    
     # guidance on logistic regression priors
-    
     #https://github.com/stan-dev/stan/wiki/Prior-Choice-Recommendations
-    
-    
-    
-#     m1 <- '
-# 
-#         data {                         
-#         
-#         int<lower=0> N;                   // number of observations
-#         
-#         int<lower=0,upper=1> y[N];        // setting the dependent variable (y) as binary
-#         
-#         vector[N] x;                      // independent variable 1
-#         
-#         }
-#         
-#         
-#         parameters {
-#         
-#         real alpha;                       // intercept
-#         
-#         real b_x;                         // beta for x, etc
-#         
-#         }
-#         
-#         model {
-#         
-#         alpha ~ normal(-.88, .25) ; // cauchy(0,10)  uniform(-1, 1);  you can set priors for all betas  student_t(3,0,2.5);   normal(0, 10);
-#         
-#         b_x ~ normal(.23,.395)  ; // cauchy(0,2.5) student_t(3,0,2.5);  if you prefer not to, uniform priors will be used
-#         
-#         y ~ bernoulli_logit(alpha + b_x * x  ); // model
-# 
-# }'
-#     
-    
-    
- m1 <- 'data {
-  int N;  // number of items
-  int y[N];  // binary outcome for item n
-  real x[N];  // predictive feature for item n
-}
-parameters {
-  real alpha;  // intercept
-  real beta;  // slope
-}
-model {
-  alpha ~ student_t(3,0,2.5);  // weakly informative normal(0,5);cauchy(0,2.5); 
-  for (n in 1:N)
-    y[n] ~ bernoulli(inv_logit(alpha + beta * x[n]));
-}'
+     
+# prio  <-   "student_t(3,0,2.5)"  #eval(parse(text=prior1))
+ m1 <- paste0('data {
+        int N;  // number of items
+        int y[N];  // binary outcome for item n
+        real x[N];  // predictive feature for item n
+          }
+        parameters {
+        real alpha;  // intercept
+        real beta;  // slope
+          }
+        model {
+        alpha ~ ',prio,';  // weakly informative normal(0,5);cauchy(0,2.5); 
+        for (n in 1:N)
+        y[n] ~ bernoulli(inv_logit(alpha + beta * x[n]));
+        }
+        
+        generated quantities {
+        
+           real d;
+           real r;
+           real oddsratio;
+           real prob;
+           real p1;
+           real p2;
+        
+           p2 = 1/(1+exp(-alpha));
+           p1 = 1/(1+exp(-(alpha+beta)));
+           prob = p1>p2;
+           r = p1/p2;
+           d = p1-p2;
+           oddsratio = (p1/(1-p1)) / (p2/(1-p2));
+        
+        
+}')
 
   
 
 # Create a list with the chosen variables
 
-data.list <- list(N = nrow(dd), y = dd$y, x = dd$x )
-
-#str(data.list)
-
-
+  data.list <- list(N = nrow(dd), y = dd$y, x = dd$x )
 
 # Estimate the model
 
-mod <- stan_model(model_code = m1, verbose = FALSE)
-
-fitx <- sampling(mod, data = data.list, iter = 1000, chains = 4, refresh=0)
-
+    mod <- stan_model(model_code = m1, verbose = FALSE)
+    fitx <- sampling(mod, data = data.list , refresh=0)
+    
+   # sampling(mod, data = data.list, iter = 1000, chains = 4, refresh=0)
+    #names(fitx) <- c("intercept (log odds of control resp.)", "log odds ratio Trt:Ctrl" , "lp")
+ #   fitx2 <- print(fitx, digits=3)
  
+    #https://cran.r-project.org/web/packages/rstan/vignettes/stanfit-objects.html
+    
+    ## extract alpha and beta with 'permuted = TRUE'
+    # fit_ss <- extract(fitx, permuted = TRUE) # fit_ss is a list
+    # 
+    # ## list fit_ss should have elements with name 'alpha', 'beta', 'lp__'
+    # alpha <- fit_ss$alpha
+    # beta <-  fit_ss$beta
+    # 
+    # ## or extract alpha by just specifying pars = 'alpha'
+    # #alpha2 <- extract(fit, pars = 'alpha', permuted = TRUE)$alpha
+    # 
+    # placebo.prob <- 1/(1+exp(-alpha))
+    # quantiles1 = quantile(placebo.prob,c(0.025,0.25,0.5,0.75,0.975))
+    # 
+    # trt.prob <- 1/(1+exp(-(alpha+beta)))
+    # # trt.prob <- exp(alpha+beta)/(1+exp(alpha+beta)) # same as above
+    # quantiles2 = quantile(trt.prob,c(0.025,0.25,0.5,0.75,0.975))
+    # 
+    # d <- trt.prob - placebo.prob
+    # quantiles3 = quantile(d,c(0.025,0.25,0.5,0.75,0.975))
+    # 
+    # ratio   <- trt.prob / placebo.prob
+    # quantiles4 = quantile(ratio,c(0.025,0.25,0.5,0.75,0.975))
+    # 
+    # or   <- (trt.prob/(1-trt.prob)) /  (placebo.prob /(1-placebo.prob ))
+    # quantiles5 = quantile(or,c(0.025,0.25,0.5,0.75,0.975))
+    # 
+    # res  <- rbind(quantiles1, quantiles2, quantiles3, quantiles4, quantiles5 )
+    # rownames(res) <-c( "Ctrl probability of resp","Trt probability of resp",
+    #                    "Trt-Ctrl probability of resp"  ,
+    #                    "Trt/Ctrl rel risk of resp",
+    #                    "Odds ratio Trt  v Ctrl")
+    
+    rnamez <- c("alpha","beta","trt-ctrl","trt/ctrl", "odds ratio trt:ctrl", "p(trt>ctrl)",
+                "p(y=1|trt)","p(y=1|ctrl)","drop")
+    cnamez <- c("Mean","2.5%","25%","50%","75%","97.5%")
+    
+    f <- as.matrix(fitx)
+    
+    clean <- function(x) { c(mean(x), quantile(x,c(.025, 0.25, 0.5, 0.75, 0.975))) }
+    
+    x <- apply(f, 2, clean)
+    
+    z <- t(x)
+    
+    rownames(z) <- rnamez
+    
+    colnames(z) <- cnamez
+    
+    z <- z[!rownames(z) %in%  "drop",]
+    
+     
+    
+    
+    
+    
 
-names(fitx) <- c("intercept", "log odds ratio" , "lp")
+    
+    
+    
+    # stan_diag(fitx, info = 'sample') # shows three plots together
+    # 
+    # 
+    # stan_par(fitx, par = "alpha")
 
-fitx2 <- print(fitx, digits=3)
-# require(sjstats)
-
-
-
-
-#https://cran.r-project.org/web/packages/rstan/vignettes/stanfit-objects.html
-
-## extract alpha and beta with 'permuted = TRUE'
-
-fit_ss <- extract(fitx, permuted = TRUE) # fit_ss is a list
-
-## list fit_ss should have elements with name 'alpha', 'beta', 'lp__'
-
-alpha <- fit_ss$alpha
-
-beta <- fit_ss$beta
-
-## or extract alpha by just specifying pars = 'alpha'
-
-#alpha2 <- extract(fit, pars = 'alpha', permuted = TRUE)$alpha
-
-
-
-placebo.prob <- 1/(1+exp(-alpha))
-quantiles1 = quantile(placebo.prob,c(0.025,0.25,0.5,0.75,0.975))
-
-
-trt.prob <- 1/(1+exp(-(alpha+beta)))
-# trt.prob <- exp(alpha+beta)/(1+exp(alpha+beta)) # same as above
-quantiles2 = quantile(trt.prob,c(0.025,0.25,0.5,0.75,0.975))
-
-
-d <- trt.prob - placebo.prob
-quantiles3 = quantile(d,c(0.025,0.25,0.5,0.75,0.975))
-
-res  <- rbind(quantiles1, quantiles2, quantiles3 )
-rownames(res) <-c( "Grp1 probability","Grp2 probability", "Grp3 probability")
-
-
-
-
-return(list(res= res , fitx2=fitx2)) 
-
-
-
-
-
-
-
-
-
-
-
+    require(bayesplot)
+    
+    dplot1 <- mcmc_pairs(fitx,   pars = c("alpha", "beta","d","r","oddsratio","prob"),
+               off_diag_args = list(size = 0.75))
+    
+ 
+     # dplot2 <- color_scheme_set("mix-brightblue-gray") 
+     #  mcmc_trace(fitx, pars = c("alpha","beta") ) +
+     #    xlab("Post-warmup iteration")
+ 
+      return(list(res= z , fitx2=fitx2 , dplot1=dplot1 )) 
+      
  })
   
   # --------------------------------------------------------------------------
   # --------------------------------------------------------------------------
   # --------------------------------------------------------------------------
   # tab 2
-  output$res.plot2  <- renderPlot({       
+  output$dplotchain  <- renderPlot({       
+  #   
+    f <- stan2()$fitx2
+  #   # beta.treatment <-  sample$trt 
+  #   # trial <- make.data()$trial
+  #   # stats <- stats()
+  #   
+  #   
+  #   require(bayesplot)
+  #   # 
+  #   # dplot1 <- mcmc_pairs(f,   pars = c("alpha", "beta","d","r","oddsratio","prob"),
+  #   #                      off_diag_args = list(size = 0.75))
+  #   
+  #   
     
-    # sample <- random.sample()
-    # beta.treatment <-  sample$trt 
-    # trial <- make.data()$trial
-    # stats <- stats()
-    # 
-    # A=stats()$A
-    # AT=stats()$AT 
-    # C=stats()$C    
-    # CT=stats()$CT
-    # AN=stats()$AN
-    # CN=stats()$CN
-    # 
-    # diff <- trial$y.1observed - trial$y.0observed
-    # mi <-  min( diff)*1.2
-    # ma <-  max(diff)*1.2
-    # 
-    # x <- trial$y.0observed
-    # mix <-  min( x) 
-    # max <-  max(x) 
-    # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # trt <- trial[trial$treat==1,]
-    # trt$diff <- trt$y.1observed - trt$y.0observed
-    # 
-    # cr <- with(trt, cor.test( diff,   y.0observed, method="pearson"))
-    # cr$estimate[1][[1]]
-    # cr$conf.int[1:2]
-    # cr <- paste0( p2(cr$estimate),", 95%CI (",p2(cr$conf.int[1]),", " ,p2(cr$conf.int[2]), " )")
-    # 
-    # # Due to floating point arithmetic we will see the values will slightly differ and will get a val so setting this to NA
-    # if (input$noise==0) {  cr <- "NA, 95%CI (NA, NA)"  }
-    # 
-    # trt$col1 =   ifelse(trt$diff <=  (sample$trt), "blue" , "black")         
-    # trt$col2 =   ifelse(trt$diff >   (sample$trt), "blue" , "black")           
-    # 
-    # if ( beta.treatment <  0) {
-    #   trt$colz = trt$col1
-    #   tex <- paste0("Treatment arm: Individual changes against baseline, \nPearson's correlation ",cr,"\n N= ",AN,", No of responders= ",A," (",AT,"%), non responders=",AN-A," (",100-AT,"%)")
-    # } else {
-    #   trt$colz = trt$col2
-    #   tex <- paste0("Treatment arm: Individual changes against baseline, \nPearson's correlation ",cr,"\n N= ",AN,", No of responders= ",A," (",AT,"%), non responders=",AN-A," (",100-AT,"%)")
-    # }
-    # 
-    # par(mfrow=c(1,2))
-    # with(trt, plot(diff ~  y.0observed, 
-    #                
-    #                col=  ifelse(beta.treatment <  0, trt$col1 , 
-    #                      ifelse(beta.treatment >  0, trt$col2 ,    NA )) ,
-    #                
-    #                pch=16
-    #                , xlab="observed baseline",  ylab="follow up - baseline"  ,
-    #                main=tex,
-    #                  cex.main =1.25,
-    #                ylim=c(mi,ma), xlim=c(mix,max) )) 
-    # 
-    # with(trt, abline(lm(diff ~  y.0observed), col=c("red"), lty=c(1), lwd=c(2) ) )
-    # with(trt, abline(h=(beta.treatment), col=c("forestgreen"), lty="dashed", lwd=c(2) ) )
-    # 
-    # grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
-    # abline(h=0, lwd=c(1))
-    # title(main = "", sub = "Patients observed to respond coloured blue, otherwise black; dashed horizontal line denotes the true treatment effect, treated only.",  
-    #       adj=0,cex.sub = 0.75, font.sub = 1, col.sub = "black")
-    # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ctr <- trial[trial$treat==0,]
-    # ctr$diff <- ctr$y.1observed - ctr$y.0observed
-    # 
-    # cr <- with(ctr, cor.test( diff,   y.0observed, method="pearson"))
-    # cr$estimate[1][[1]]
-    # cr$conf.int[1:2]
-    # cr <- paste0( p2(cr$estimate),", 95%CI (",p2(cr$conf.int[1]),", " ,p2(cr$conf.int[2]), " )")
-    # 
-    # # Due to floating point arithmetic we will see the values will slightly differ and will get a val so setting this to NA
-    # if (input$noise==0) {  cr <- "NA, 95%CI (NA, NA)"  }
-    # 
-    # ctr$col1 =   ifelse(ctr$diff <=  (sample$trt), "blue" , "black")         
-    # ctr$col2 =   ifelse(ctr$diff >  (sample$trt), "blue" , "black")   
-    # 
-    # if ( beta.treatment <  0) {
-    #   ctr$colz = ctr$col1
-    #   tex <- paste0("Control arm: Individual changes against baseline, \nPearson's correlation ",cr,"\n N= ",CN,", No of responders= ",C," (",CT,"%), non responders=",CN-C," (",100-CT,"%)")
-    # } else {
-    #   ctr$colz = ctr$col2
-    #   tex <- paste0("Control arm: Individual changes against baseline, \nPearson's correlation ",cr,"\n N= ",CN,", No of responders= ",C," (",CT,"%), non responders=",CN-C," (",100-CT,"%)")
-    # }
-    # 
-    # with(ctr, plot(diff ~  y.0observed, 
-    #                col=  ifelse(beta.treatment <  0, ctr$col1 , 
-    #                      ifelse(beta.treatment >  0, ctr$col2 ,    NA )) ,
-    #                pch=16
-    #                , xlab="observed baseline",  ylab="follow up - baseline"  ,
-    #                main=tex, #paste0("Control arm:  Individual changes against baseline, observed responders in blue\nPearson's correlation ",cr
-    #                           # , "; control patients \n N= ",CN,", No of responders= ",C," (",CT,"%)")
-    #                cex.main =1.25,
-    #                ylim=c(mi,ma), xlim=c(mix,max) ) ) 
-    # 
-    # with(ctr, abline(lm(diff ~  y.0observed), col=c("red"), lty=c(1), lwd=c(2) ) )
-    # 
-    # grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
-    # abline(h=0, lwd=c(1))
-    # with(ctr, abline(h=(beta.treatment), col=c("forestgreen"), lty="dashed",  lwd=c(2) ))
-    # 
-    # title(main = "", sub = "Red line is linear regression line of best fit.",  
-    #       adj=0,cex.sub = 0.75, font.sub = 1, col.sub = "black")
-    # 
-    # par(mfrow=c(1,1))
     
-  })
+    dplot2 <- color_scheme_set("mix-brightblue-gray") 
+    mcmc_trace(f, pars = c("alpha","beta") ) +
+      xlab("Post-warmup iteration")
+  #   # par(mfrow=c(1,2))
+  # 
+  #   # par(mfrow=c(1,1))
+  #   
+ })
   # --------------------------------------------------------------------------
   # --------------------------------------------------------------------------
   # --------------------------------------------------------------------------   
