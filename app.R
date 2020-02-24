@@ -659,11 +659,11 @@ server <- shinyServer(function(input, output   ) {
     
   })
   
-  output$dplot2 <- renderPlot({  
-    
-    return(stan2()$dplot2)
-    
-  })
+  # output$dplot2 <- renderPlot({  
+  #   
+  #   return(stan2()$dplot2)
+  #   
+  # })
   # --------------------------------------------------------------------------
   # --------------------------------------------------------------------------
   # --------------------------------------------------------------------------
@@ -854,7 +854,7 @@ server <- shinyServer(function(input, output   ) {
      #  mcmc_trace(fitx, pars = c("alpha","beta") ) +
      #    xlab("Post-warmup iteration")
  
-      return(list(res= z , fitx2=fitx2 , dplot1=dplot1 )) 
+      return(list(res= z , fitx2=fitx , dplot1=dplot1 )) 
       
  })
   
@@ -862,7 +862,7 @@ server <- shinyServer(function(input, output   ) {
   # --------------------------------------------------------------------------
   # --------------------------------------------------------------------------
   # tab 2
-  output$dplotchain  <- renderPlot({       
+  output$dplot2  <- renderPlot({       
   #   
     f <- stan2()$fitx2
   #   # beta.treatment <-  sample$trt 
