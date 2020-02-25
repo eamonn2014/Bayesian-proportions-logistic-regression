@@ -298,7 +298,7 @@ server <- shinyServer(function(input, output   ) {
         xs2 <- seq(-4,4, by=2)
         prob <- print(exp(xs2)/(1+exp(xs2)), digits=2)
         prob <- round(prob,2)
-        #p2 <- function(x) {formatC(x, format="f", digits=2)}
+        #p2 <- function(x) {formatC(x, format="f", digits=2)}  
         
         
         ##if (n =1) {
