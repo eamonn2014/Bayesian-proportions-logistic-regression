@@ -7,7 +7,11 @@ require(LearnBayes)
 library(tidyverse)
 library(shinyWidgets)
 library(shinythemes)  # more funky looking apps
+library(rstan)
+library(DT)
 # library(shinydashboard)
+options(mc.cores = parallel::detectCores())
+rstan_options(auto_write = TRUE)
 options(max.print=1000000)
 fig.width <- 1375
 fig.height <- 550
@@ -17,7 +21,7 @@ fig.width3 <- 800
 fig.height3 <- 545
 p1 <- function(x) {formatC(x, format="f", digits=1)}
 p2 <- function(x) {formatC(x, format="f", digits=2)}
-options(width=140)
+options(width=150)
 set.seed(12345) # reproducible
 
 pop=1e6 # this is the population size we take sample from
@@ -246,10 +250,11 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                        p(strong("Bayesian Monte Carlo Estimates")),
                               ),
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                              tabPanel("4 Monte Carlo", value=3, 
+                              tabPanel("4 Monte Carlo", value=3,
                                       # div( verbatimTextOutput("reg.summary2")),
                                        #    div(plotOutput("res.plot3", width=fig.width2, height=fig.height2)), 
-                                       h4("Figure 4 Bayesian Monte Carlo Estimates"),         
+                                       h4("Figure 4 Bayesian Monte Carlo Estimates"),    
+                                      div( verbatimTextOutput("stats")),
                               ) ,
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                               tabPanel("5 xxxxxxxxxxxxxxxxx", value=7, 
@@ -307,7 +312,17 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                        div(plotOutput("dplot2", width=fig.width, height=fig.height)),  
                                        #  DT::dataTableOutput("table1"),
                                        
+                              ) ,
+                              
+                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                              tabPanel("8 Results", value=3, 
+                                       #  h4("Data listing"),
+                                       h6("Sort and filter on the fly."),
+                                      # DT::dataTableOutput("table1"),
+                                       
+                                       
                               ) 
+                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                             )
                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -541,13 +556,12 @@ server <- shinyServer(function(input, output   ) {
     beta2 <- b1
     
    
-    library(rstan)
+  #  library(rstan)
     
     
     # The Stan model as a string.
     
-    model_string <- paste0("// Here we define the data we are going to pass into the model
-
+    model_string <- paste0(" 
         data {
         
           int n;   // Number of trials
@@ -556,8 +570,6 @@ server <- shinyServer(function(input, output   ) {
           int s1;  // Number of successes
         
           }
-        
-         
         
         // Here we define what 'unknowns' aka parameters we have.
         
@@ -572,10 +584,10 @@ server <- shinyServer(function(input, output   ) {
         
         model {
         
-          rate ~ beta(",alpha1,",", beta1,") ;    //prior this on trt
+          rate ~ beta(",alpha1,",", beta1,") ;    // prior on trt
           s ~ binomial(n, rate);  #14/25
         
-          rate1 ~ beta(",alpha2,",", beta2,");  //prior this on placebo
+          rate1 ~ beta(",alpha2,",", beta2,");    // prior on placebo
           s1 ~ binomial(n1, rate1);
         
         }
@@ -863,28 +875,13 @@ server <- shinyServer(function(input, output   ) {
   # --------------------------------------------------------------------------
   # tab 2
   output$dplot2  <- renderPlot({       
-  #   
+     
     f <- stan2()$fitx2
-  #   # beta.treatment <-  sample$trt 
-  #   # trial <- make.data()$trial
-  #   # stats <- stats()
-  #   
-  #   
-  #   require(bayesplot)
-  #   # 
-  #   # dplot1 <- mcmc_pairs(f,   pars = c("alpha", "beta","d","r","oddsratio","prob"),
-  #   #                      off_diag_args = list(size = 0.75))
-  #   
-  #   
-    
-    
+ 
     dplot2 <- color_scheme_set("mix-brightblue-gray") 
     mcmc_trace(f, pars = c("alpha","beta") ) +
       xlab("Post-warmup iteration")
-  #   # par(mfrow=c(1,2))
-  # 
-  #   # par(mfrow=c(1,1))
-  #   
+
  })
   # --------------------------------------------------------------------------
   # --------------------------------------------------------------------------
@@ -1176,6 +1173,21 @@ server <- shinyServer(function(input, output   ) {
   # --------------------------------------------------------------------------
   senn2 <- reactive({
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     # sample <- random.sample()
     # 
     # noise <-  sample$noise        
@@ -1218,90 +1230,120 @@ server <- shinyServer(function(input, output   ) {
     
   })
   
-  output$senn.est2 <- renderPrint({
+  #output$senn.est2 <- renderPrint({
     
     # return(senn2()$res2)
     
-  })
+  #})
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # ---------------------------------------------------------------------------
   # get some counts and percentage for observed resp and non resp
-  stats <- reactive({
+  output$stats<- renderPrint({
     
-    #    sample <- random.sample()
-    #    
-    #    trial <- make.data()$trial
-    #    
-    #    
-    #    if (sample$trt < 0) {    
-    #    
-    #        N <- nrow(trial)
-    #    # ---------------------------------------------------------------------------treated
-    #       # trt rel diff -ve
-    #        trt <- trial[trial$treat==1,]
-    #        trt$diff <- trt$delta.observed      # trt effect          
-    #        foo <- sort(trt[,"diff"])                         # sorted treatment effect
-    #        A <- mean(foo <= sample$trt)*length(foo)          # proportion at follow up less than or equal to trt effect
-    #        AT <- round(A/length(foo)*100,1)                  # %
-    #        AN <- length(foo)                                 # count
-    #        
-    #        T.SENN <-   mean(foo < input$senn)*length(foo)   # proportion at follow up less than clin rel diff
-    #        TC.SENN <- round(T.SENN/length(foo)*100,1)        # %
-    #        # ---------------------------------------------------------------------------ctrl
-    #        trt <- trial[trial$treat==0,]                     # same for ctrl
-    #        trt$diff <- trt$delta.observed 
-    #        foo <- sort(trt[,"diff"])
-    #        C <- mean(foo <= sample$trt)*length(foo)   # 
-    #        CT <- round(C/length(foo)*100,1)
-    #        CN = length(foo)
-    #        
-    #        C.SENN <- mean(foo < input$senn)*length(foo)
-    #        CT.SENN <- round(C.SENN/length(foo)*100,1)
-    #    
-    #        
-    #    } else { 
-    #   
-    #         N <- nrow(trial)
-    #         trt <- trial[trial$treat==1,]
-    #         trt$diff <- trt$delta.observed 
-    #         foo <- sort(trt[,"diff"])
-    #         A <- mean(foo > sample$trt)*length(foo)   # 
-    #         AT <- round(A/length(foo)*100,1)
-    #         AN <- length(foo)
-    #         
-    #         T.SENN <- mean(foo < input$senn)*length(foo)
-    #         TC.SENN <- round(T.SENN/length(foo)*100,1)
-    #         # ---------------------------------------------------------------------------
-    #         trt <- trial[trial$treat==0,]
-    #         trt$diff <-trt$delta.observed 
-    #         foo <- sort(trt[,"diff"])
-    #         C <- mean(foo > sample$trt)*length(foo)   # 
-    #         CT <- round(C/length(foo)*100,1)
-    #         CN = length(foo)
-    #         
-    #         C.SENN <-mean(foo < input$senn)*length(foo)
-    #         CT.SENN <- round(C.SENN/length(foo)*100,1)
-    # }
-    #        
+    mc <- mcmc()$f1
+    s1 <- stan()$f
+    s2 <- stan2()$res
+ 
+    A <- (mc)
+    B <- (s1)
+    C <- (s2)
+ 
+    A <- data.frame(A)
+    B <- data.frame(B)
+    C <- data.frame(C)
     
+    A$model <- "Monte Carlo simulation"
+    B$model <- "Bayesian proportions"
+    C$model <- "Bayesian logistic reg."
     
+    x <- rbind(A,B,C)
+    x$parameter = rownames(x)
     
+    names(x) <- c("Mean","p2.5","p25","p50","p75","p975","Model","parameter")
+    x <- x[,c("Model","parameter","Mean","p2.5","p25","p50","p75","p975")]
     
+    rownames(x) <- NULL
     
+    print(x, digits=2)
     
-    
-    
-    
-    
-    
-    # Z <- data.frame(AN=AN, A=A, AT=AT, CN=CN, C=C, CT= CT)
-    # names(Z) <- c("N trt","Observed responders trt",  "%" , "N ctrl","Observed responders ctrl" , "%")
-    # rownames(Z) <- NULL
-    # ---------------------------------------------------------------------------
-    # return(list(A=A, AT=AT, C=C, CT= CT,  AN=AN, CN=CN, T.SENN=T.SENN, TC.SENN=TC.SENN, #Z=Z,
-    #             C.SENN=C.SENN , CT.SENN=CT.SENN)) 
-    
+   #return(x)
   })
+  
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+  # listing of simulated data
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+  output$table1 <- DT::renderDataTable({
+    
+    mc <- mcmc()$f1
+    s1 <- stan()$f
+    s2 <- stan2()$res
+    
+    A <- (mc)
+    B <- (s1)
+    C <- (s2)
+    
+    A <- data.frame(A)
+    B <- data.frame(B)
+    C <- data.frame(C)
+    
+    A$model <- "Monte Carlo simulation"
+    B$model <- "Bayesian proportions"
+    C$model <- "Bayesian logistic reg."
+    
+    x <- rbind(A,B,C)
+    x$parameter = rownames(x)
+    
+    names(x) <- c("Mean","p2.5","p25","p50","p75","p975","Model","parameter")
+    x <- x[,c("Model","parameter","Mean","p2.5","p25","p50","p75","p975")]
+    
+    rownames(x) <- NULL
+    
+    foo <- x
+    datatable(foo,   
+              
+              rownames = FALSE,
+              
+              options = list(
+                searching = TRUE,
+                pageLength = input$V-1,
+                paging=FALSE,
+                lengthMenu = FALSE ,
+                lengthChange = FALSE,
+                autoWidth = FALSE
+                # colReorder = TRUE,
+                # deferRender = TRUE,
+                # scrollY = 200,
+                # scroller = T
+              ))  %>%
+      formatRound(
+        columns= c("Model","parameter","Mean","p2.5","p25","p50","p75","p975"), digits=c(0,0,3,3,3,3,3,3)  )
+  })
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   # ---------------------------------------------------------------------------
   lmm <- reactive({
     
