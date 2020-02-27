@@ -341,13 +341,7 @@ server <- shinyServer(function(input, output   ) {
   # This is where a new sample is instigated 
   random.sample <- reactive({
     
-    # Dummy line to trigger off button-press
-    # prob1 <-    input$prob1
-    # prob2 <-    input$prob2
-    # prob3 <-    input$prob3
-    # prob4<-     input$prob4
-    # prob5<-     input$prob5
-    # prob6 <-    input$prob6
+ 
     i <- as.numeric(unlist(strsplit(input$vec1,",")))
     j <- as.numeric(unlist(strsplit(input$vec2,",")))
     
@@ -395,11 +389,6 @@ server <- shinyServer(function(input, output   ) {
   })
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-  output$summaryx3 <- renderPrint({
-    #  print(make.data()$N)
-  }) 
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  
   
@@ -467,7 +456,6 @@ server <- shinyServer(function(input, output   ) {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     mcmc <- reactive({
       
-      
       sample <- random.sample()
       a  <- trt.alpha<- sample$trt.alpha
       b  <- trt.beta<-sample$trt.beta
@@ -504,11 +492,7 @@ server <- shinyServer(function(input, output   ) {
       
       rownames(z) <- rnamez
       colnames(z) <- cnamez
-      
-    
-      
-      
-      
+ 
       
       #res
       # VISUALIZATION
@@ -531,11 +515,7 @@ server <- shinyServer(function(input, output   ) {
     
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    
- 
-  
-  
+
   stan <- reactive({
     
     sample <- random.sample()
@@ -671,12 +651,7 @@ server <- shinyServer(function(input, output   ) {
     
   })
   
-  # output$dplot2 <- renderPlot({  
-  #   
-  #   return(stan2()$dplot2)
-  #   
-  # })
-  # --------------------------------------------------------------------------
+   #--------------------------------------------------------------------
   # --------------------------------------------------------------------------
   # --------------------------------------------------------------------------
   # tab 1 plot trt and plot ctrl
@@ -786,43 +761,7 @@ server <- shinyServer(function(input, output   ) {
     mod <- stan_model(model_code = m1, verbose = FALSE)
     fitx <- sampling(mod, data = data.list , refresh=0)
     
-   # sampling(mod, data = data.list, iter = 1000, chains = 4, refresh=0)
-    #names(fitx) <- c("intercept (log odds of control resp.)", "log odds ratio Trt:Ctrl" , "lp")
- #   fitx2 <- print(fitx, digits=3)
- 
-    #https://cran.r-project.org/web/packages/rstan/vignettes/stanfit-objects.html
-    
-    ## extract alpha and beta with 'permuted = TRUE'
-    # fit_ss <- extract(fitx, permuted = TRUE) # fit_ss is a list
-    # 
-    # ## list fit_ss should have elements with name 'alpha', 'beta', 'lp__'
-    # alpha <- fit_ss$alpha
-    # beta <-  fit_ss$beta
-    # 
-    # ## or extract alpha by just specifying pars = 'alpha'
-    # #alpha2 <- extract(fit, pars = 'alpha', permuted = TRUE)$alpha
-    # 
-    # placebo.prob <- 1/(1+exp(-alpha))
-    # quantiles1 = quantile(placebo.prob,c(0.025,0.25,0.5,0.75,0.975))
-    # 
-    # trt.prob <- 1/(1+exp(-(alpha+beta)))
-    # # trt.prob <- exp(alpha+beta)/(1+exp(alpha+beta)) # same as above
-    # quantiles2 = quantile(trt.prob,c(0.025,0.25,0.5,0.75,0.975))
-    # 
-    # d <- trt.prob - placebo.prob
-    # quantiles3 = quantile(d,c(0.025,0.25,0.5,0.75,0.975))
-    # 
-    # ratio   <- trt.prob / placebo.prob
-    # quantiles4 = quantile(ratio,c(0.025,0.25,0.5,0.75,0.975))
-    # 
-    # or   <- (trt.prob/(1-trt.prob)) /  (placebo.prob /(1-placebo.prob ))
-    # quantiles5 = quantile(or,c(0.025,0.25,0.5,0.75,0.975))
-    # 
-    # res  <- rbind(quantiles1, quantiles2, quantiles3, quantiles4, quantiles5 )
-    # rownames(res) <-c( "Ctrl probability of resp","Trt probability of resp",
-    #                    "Trt-Ctrl probability of resp"  ,
-    #                    "Trt/Ctrl rel risk of resp",
-    #                    "Odds ratio Trt  v Ctrl")
+  
     
     rnamez <- c("alpha","beta","trt-ctrl","trt/ctrl", "odds ratio trt:ctrl", "p(trt>ctrl)",
                 "p(y=1|trt)","p(y=1|ctrl)","drop")
@@ -842,14 +781,7 @@ server <- shinyServer(function(input, output   ) {
     
     z <- z[!rownames(z) %in%  "drop",]
     
-     
-    
-    
-    
-    
 
-    
-    
     
     # stan_diag(fitx, info = 'sample') # shows three plots together
     # 
@@ -885,357 +817,6 @@ server <- shinyServer(function(input, output   ) {
  })
   # --------------------------------------------------------------------------
   # --------------------------------------------------------------------------
-  # --------------------------------------------------------------------------   
-  # 3rd tab
-  output$res.plot3 <- renderPlot({       
-    
-    #   sample <- random.sample()
-    #   
-    #   trial <- make.data()$trial
-    #   
-    #   N <- make.data()$N
-    #   
-    #   stats <- stats()
-    #   A=stats()$A
-    #   AT=stats()$AT 
-    #   C=stats()$C    
-    #   CT=stats()$CT
-    #   AN=stats()$AN
-    #   CN=stats()$CN
-    #   
-    #   diff <- trial$y.1observed - trial$y.0observed
-    #   mi <-  min( diff)*1.2
-    #   ma <-  max(diff)*1.2
-    #   beta.treatment <-  sample$trt 
-    #   # ---------------------------------------------------------------------------
-    #   par(mfrow=c(2,2))
-    #   # par(bg = 'ivory')
-    #   
-    #   xup <-  max(table(trial$treat))  # new
-    #   trt <- trial[trial$treat==1,]
-    #   trt$diff <- trt$y.1observed - trt$y.0observed
-    #   
-    #   foo <- sort(trt[,"diff"])
-    #   A <- mean(foo < input$trt)*length(foo)   # shown in red
-    #   
-    #   
-    #   foo <- data.frame(foo, col1=NA, col2=NA)
-    #   
-    #   foo$col1 =   ifelse(foo$foo <=    trt$beta.treatment, "blue" , "black")         
-    #   foo$col2 =   ifelse(foo$foo >    trt$beta.treatment, "blue" , "black")   
-    #   
-    #   if (trt$beta.treatment <  0) {foo$colz = foo$col1} else {foo$colz = foo$col2}
-    #   # 
-    #   # tex <- "Individual changes in response in treated arm
-    #   #      Suggested individual differences due entirely to regression to the mean
-    #   #      and random error (within subject and measurement error)"
-    #   # tex <- paste0("Treated patients: N= ",AN,", No of responders= ",A," (",AT,"%)")
-    #   
-    #   if ( beta.treatment <  0) {
-    #     foo$colz = foo$col1
-    #     tex <- paste0("Treated patients, responders coloured blue \n N= ",AN,", No of responders= ",A," (",AT,"%), non responders=",AN-A," (",100-AT,"%)")
-    #   } else {
-    #     foo$colz = foo$col2
-    #     tex <- paste0("Treated patients, responders coloured blue \n N= ",AN,", No of responders= ",AN-A," (",100-AT,"%), non responders=",A," (",AT,"%)")
-    #   }
-    # 
-    #   plot(foo$foo, main=tex, 
-    #        ylab= "follow up - baseline", xlab="Individual subjects order by observed response", 
-    #        xlim=c(0, xup), ylim=c(mi,ma), #length(trt[,"diff"])
-    #        col=  foo$colz)
-    #   
-    #   grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
-    #   with(trt, abline(v=A, col="black", lty="dashed"))
-    #   with(trt, abline(h=0, col="black", lty=1))
-    #   with(trt, abline(h=(beta.treatment), col=c("forestgreen"), lty=c(2), lwd=c(1) ) )
-    #   # ---------------------------------------------------------------------------
-    #   trt <- trial[trial$treat==0,]
-    #   trt$diff <- trt$y.1observed - trt$y.0observed
-    #   
-    #   foo <- sort(trt[,"diff"])
-    #   C <- mean(foo < input$trt)*length(foo)   # shown in red
-    #   
-    #   foo <- data.frame(foo, col1=NA, col2=NA)
-    #   
-    #   foo$col1 =   ifelse(foo$foo <=    trt$beta.treatment, "blue" , "black")          
-    #   foo$col2 =   ifelse(foo$foo >    trt$beta.treatment, "blue" , "black")   
-    #   
-    #   #if (trt$beta.treatment <  0) {foo$colz = foo$col1} else {foo$colz = foo$col2}
-    # 
-    #   if ( beta.treatment <  0) {foo$colz = foo$col1
-    #   tex <- paste0("Control patients, responders coloured blue\n N= ",CN,", No of responders= ",C," (",CT,"%), non responders=",CN-C," (",100-CT,"%)")
-    #   } else {
-    #     foo$colz = foo$col2
-    #     tex <- paste0("Control patients, responders coloured blue\n N= ",CN,", No of responders= ",CN-C," (",CT,"%), non responders=",C," (",100-CT,"%)") 
-    #   }
-    #   
-    #   plot(foo$foo, main=tex,
-    #        ylab= "follow up - baseline", xlab="Individual subjects order by observed response", 
-    #        xlim=c(0, xup), ylim=c(mi,ma), #length(trt[,"diff"])
-    #        col=  foo$colz)
-    #   
-    #   grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
-    #   with(trt, abline(v=C, col="black", lty="dashed"))
-    #   with(trt, abline(h=0, col="black", lty=1))
-    #   with(trt, abline(h=(beta.treatment), col=c("forestgreen"), lty=c(2), lwd=c(1) ) )
-    #   
-    #   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #   trial <- make.data()$trial
-    #   
-    #   diff <- trial$y.1observed - trial$y.0observed
-    #   mi <-  min( diff)*1.2
-    #   ma <-  max(diff)*1.2
-    #   
-    #   x <- trial$y.0observed
-    #   mix <-  min( x) 
-    #   max <-  max(x) 
-    #   
-    #   trt <- trial[trial$treat==1,]
-    #   trt$diff <- trt$y.1observed - trt$y.0observed
-    #   
-    #   cr <- with(trt, cor.test( diff,   y.0observed, method="pearson"))
-    #   cr$estimate[1][[1]]
-    #   cr$conf.int[1:2]
-    #   cr <- paste0( p2(cr$estimate),", 95%CI (",p2(cr$conf.int[1]),", " ,p2(cr$conf.int[2]), " )")
-    #   
-    #   # Due to floating point arithmetic we will the values will slightly differ and will get a val so setting this to NA
-    #   if (input$noise==0) {  cr <- "NA, 95%CI (NA, NA)"  }
-    #   
-    #   trt$col1 =   ifelse(trt$diff <  (sample$trt), "blue" , "black")         
-    #   trt$col2 =   ifelse(trt$diff >  (sample$trt), "blue" , "black")           
-    #   
-    #   if ( beta.treatment <  0) {
-    #     foo$colz = foo$col1
-    #     tex <- paste0("Treatment arm: Individual changes against baseline, \nPearson's correlation ",cr,"\n N= ",AN,", No of responders= ",A," (",AT,"%), non responders=",AN-A," (",100-AT,"%)")
-    #   } else {
-    #     foo$colz = foo$col2
-    #     tex <- paste0("Treatment arm: Individual changes against baseline, \nPearson's correlation ",cr,"\n N= ",AN,", No of responders= ",AN-A," (",100-AT,"%), non responders=",A," (",AT,"%)")
-    #   }
-    # 
-    #   with(trt, plot(diff ~  y.0observed,
-    #                  
-    #                  col=  ifelse(beta.treatment <=  0, trt$col1 , 
-    #                               ifelse(beta.treatment >  0, trt$col2 ,    NA )) ,
-    #                  
-    #                  
-    #                  pch=16
-    #                  , xlab="observed baseline",  ylab="follow up - baseline"  ,
-    #                  
-    #                  main=tex, #paste0("Treatment arm: observed responders in blue\nPearson's correlation ",cr),
-    #                  
-    #                  cex.main =1.25,
-    #                  ylim=c(mi,ma), xlim=c(mix,max) ))
-    #   
-    #   grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
-    #   with(trt, abline(h=0, col="black", lty=1))
-    #   with(trt, abline(lm(diff ~  y.0observed), col=c("red"), lty=c(1), lwd=c(1) ) )
-    #   with(trt, abline(h=(beta.treatment), col=c("forestgreen"), lty=c(2), lwd=c(1) ) )
-    #   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #   
-    #   ctr <- trial[trial$treat==0,]
-    #   ctr$diff <- ctr$y.1observed - ctr$y.0observed
-    #   cr <- with(ctr, cor.test( diff,   y.0observed, method="pearson"))
-    #   cr$estimate[1][[1]]
-    #   cr$conf.int[1:2]
-    #   cr <- paste0( p2(cr$estimate),", 95%CI (",p2(cr$conf.int[1]),", " ,p2(cr$conf.int[2]), " )")
-    #   
-    #   # Due to floating point arithmetic we will the values will slightly differ and will get a val so setting this to NA
-    #   if (input$noise==0) {  cr <- "NA, 95%CI (NA, NA)"  }
-    #   
-    #   ctr$col1 =   ifelse(ctr$diff <  (sample$trt), "blue" , "black")         
-    #   ctr$col2 =   ifelse(ctr$diff >  (sample$trt), "blue" , "black")   
-    #   
-    #   if ( beta.treatment <  0) {
-    #     ctr$colz = foo$col1
-    #     tex <- paste0("Control arm: Individual changes against baseline, \nPearson's correlation ",cr,"\n N= ",CN,", No of responders= ",C," (",CT,"%), non responders=",CN-C," (",100-CT,"%)")
-    #   } else {
-    #     ctr$colz = foo$col2
-    #     tex <- paste0("Control arm: Individual changes against baseline, \nPearson's correlation ",cr,"\n N= ",CN,", No of responders= ",CN-C," (",CT,"%), non responders=",C," (",100-CT,"%)")
-    #   }
-    #   
-    #   with(ctr, plot(diff ~  y.0observed, 
-    #                  
-    #                  col=  ifelse(beta.treatment <=  0, ctr$col1 , 
-    #                               ifelse(beta.treatment >  0, ctr$col2 ,    NA )) ,
-    #                  
-    #                  pch=16
-    #                  , xlab="observed baseline",  ylab="follow up - baseline"  ,
-    #                  
-    #                  main=tex, #paste0("Treatment arm: observed responders in blue\nPearson's correlation ",cr),
-    #                  
-    #                  cex.main =1.25,
-    #                  ylim=c(mi,ma), xlim=c(mix,max) ))
-    #   
-    #   grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
-    #   with(ctr, abline(h=0, col="black", lty=1))
-    #   with(ctr, abline(lm(diff ~  y.0observed), col=c("red"), lty=c(1), lwd=c(1) ) )
-    #   with(ctr, abline(h=(beta.treatment), col=c("forestgreen"), lty=c(2), lwd=c(1) ) )
-    #   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #   par(mfrow=c(1,1))
-    #   
-    # })
-    # # --------------------------------------------------------------------------
-    # # --------------------------------------------------------------------------
-    # # --------------------------------------------------------------------------
-    # # fith tab
-    # output$reg.plot4 <- renderPlot({         
-    #   
-    #   trial <- make.data()$trial
-    #    sample <- random.sample()
-    #   N <- make.data()$N
-    # 
-    #   diff <- trial$y.1observed - trial$y.0observed
-    #   mi <-  min( diff)*1.2
-    #   ma <-  max(diff)*1.2
-    #   
-    #   stats <- stats()
-    #   A=stats()$A
-    #   AT=stats()$AT 
-    #   C=stats()$C    
-    #   CT=stats()$CT
-    #   AN=stats()$AN
-    #   CN=stats()$CN
-    #   T.SENN =stats()$T.SENN
-    #   C.SENN =stats()$C.SENN
-    #   TC.SENN =stats()$TC.SENN
-    #   CT.SENN =stats()$CT.SENN
-    # 
-    #   xup <-  max(table(trial$treat))  # new
-    # 
-    #   trt <- trial[trial$treat==1,]
-    #   trt$diff <- trt$y.1observed - trt$y.0observed
-    # 
-    #   foo <- sort(trt[,"diff"])
-    # 
-    #   foo <- data.frame(foo, col1=NA, col2=NA)
-    # 
-    #   foo$col1 =   ifelse(foo$foo <=    input$senn, "blue" , "black")
-    #   foo$col2 =   ifelse(foo$foo >     input$senn, "blue" , "black")
-    # 
-    #   if ( input$senn <  0) {
-    #     foo$colz = foo$col1
-    #   tex <- paste0("Treated patients \n N= ",AN,", No of responders= ",T.SENN," (",TC.SENN,"%), non responders=",AN-T.SENN," (",100-TC.SENN,"%)")
-    #   } else {
-    #     foo$colz = foo$col2
-    #   tex <- paste0("Treated patients \n N= ",AN,", No of responders= ",AN-T.SENN," (",100-TC.SENN,"%), non responders=",T.SENN," (",TC.SENN,"%)")
-    #   }
-    #   par(mfrow=c(1,2))
-    #   plot(foo$foo, main=tex,
-    #        ylab= "follow up - baseline", xlab="Individual subjects ordered by observed response",
-    #        xlim=c(0, xup), ylim=c(mi,ma), #length(trt[,"diff"])
-    #        col=  foo$colz)
-    #   grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
-    # 
-    #   abline(h=0)
-    #   abline(h=input$trt, lty=2)
-    #   abline(h=input$senn, lty=2, col="blue")
-    #   title(main = "", sub = "Patients observed to respond coloured blue, otherwise black; blue dashed line denotes clincal relevant difference",  
-    #         adj=0,cex.sub = 0.75, font.sub = 1, col.sub = "black"
-    #         
-    #   )
-    #   # ---------------------------------------------------------------------------
-    # 
-    #   trt <- trial[trial$treat==0,]
-    #   trt$diff <- trt$y.1observed - trt$y.0observed
-    #   foo <- sort(trt[,"diff"])
-    # 
-    #   foo <- data.frame(foo, col1=NA, col2=NA)
-    # 
-    #   foo$col1 =   ifelse(foo$foo <=     input$senn, "blue" , "black")
-    #   foo$col2 =   ifelse(foo$foo >     input$senn, "blue" , "black")
-    # 
-    #   if ( input$senn <  0) {foo$colz = foo$col1
-    #   tex <- paste0("Control patients \n N= ",CN,", No of responders= ",C.SENN," (",CT.SENN,"%), non responders=",CN-C.SENN," (",100-CT.SENN,"%)")
-    #   } else {
-    #     foo$colz = foo$col2
-    #   tex <- paste0("Control patients \n N= ",CN,", No of responders= ",CN-C.SENN," (",100-CT.SENN,"%), non responders=",C.SENN," (",CT.SENN,"%)")
-    #   }
-    # 
-    #   plot(foo$foo, main=tex,
-    #        ylab= "follow up - baseline", xlab="Individual subjects ordered by observed response",
-    #        xlim=c(0, xup), ylim=c(mi,ma), #length(trt[,"diff"])
-    #        col=  foo$colz)
-    #   grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
-    # 
-    #   abline(h=0)
-    #   abline(h=input$trt, lty=2)
-    #   abline(h=input$senn, lty=2, col="blue")
-    #   title(main = "", sub = "Patients observed to respond coloured blue, otherwise black; black dashed line the true trt effect, which should only manifest in the treated only",  
-    #         adj=0,cex.sub = 0.75, font.sub = 1, col.sub = "black"
-    #         
-    #   )
-    #   
-    #   par(mfrow=c(1,1))
-    # ---------------------------------------------------------------------------
-  })
-  # --------------------------------------------------------------------------
-  # --------------------------------------------------------------------------
-  # --------------------------------------------------------------------------
-  senn2 <- reactive({
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    # sample <- random.sample()
-    # 
-    # noise <-  sample$noise        
-    # beta.treatment <-  sample$trt   
-    # senn <- (input$senn)
-    # 
-    # 
-    # if (beta.treatment < 0 & senn > 0 ) {
-    #   
-    #     res <-  pnorm( (beta.treatment-senn)/ sqrt(noise^2+noise^2)    )
-    #     res2 <- pnorm( (0-senn)/ sqrt(noise^2+noise^2)    )
-    # 
-    # }  else if (beta.treatment < 0 & senn <  0 ) {
-    #   
-    #     res <-  1- pnorm( (beta.treatment-senn)/ sqrt(noise^2+noise^2)    )
-    #     res2 <- 1- pnorm( (0-senn)/ sqrt(noise^2+noise^2)    )
-    #   
-    # }  else  if (beta.treatment > 0 & senn < 0 ) {
-    #   
-    #     res <-  1- pnorm( (beta.treatment-senn)/ sqrt(noise^2+noise^2)    )
-    #     res2 <- 1- pnorm( (0-senn)/ sqrt(noise^2+noise^2)    )
-    #   
-    #    # beta.treatment > 0 & senn > 0 
-    #   } else  {
-    #     
-    #     res <-   pnorm( (beta.treatment-senn)/ sqrt(noise^2+noise^2)    )
-    #     res2 <-  pnorm( (0-senn)/ sqrt(noise^2+noise^2)    )
-    # }  
-    #   
-    #   
-    # 
-    # return(list(res=res , res2=res2))
-    
-  })     
-  
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  output$senn.est <- renderPrint({
-    
-    # return(senn2()$res)
-    
-  })
-  
-  #output$senn.est2 <- renderPrint({
-    
-    # return(senn2()$res2)
-    
-  #})
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # ---------------------------------------------------------------------------
   # get some counts and percentage for observed resp and non resp
   output$stats<- renderPrint({
@@ -1326,175 +907,9 @@ server <- shinyServer(function(input, output   ) {
               ))  %>%
       formatRound(
     columns= c("Model","parameter","Mean","p2.5","p25","p50","p75","p975"), digits=c(0,0,3,3,3,3,3,3)  )
-    
-   # library(DT)
-    #datatable(x,   
-     #         ) %>%
-      #formatRound(
-       # columns= c("Model","parameter","Mean","p2.5","p25","p50","p75","p975"), digits=c(2)  )
+ 
   })
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  # ---------------------------------------------------------------------------
-  lmm <- reactive({
-    
-    #   sample <- random.sample()
-    #   
-    #   d <- make.data()$d
-    # 
-    #  require(nlme)
-    # # LMM approach
-    # m1 <- lme(delta.observed~ treat + y.0observed,
-    #           random=~1|treat , data=d, method="REML",
-    #           weights = varIdent(form = ~1 | treat))
-    # 
-    # m0 <-lme(delta.observed~ treat + y.0observed,
-    #          random=~1|treat , data=d, method="REML")
-    # 
-    # # print(m1)
-    # m2 <- anova(m1,m0) # are the trt ctr interindividual variation in response different?
-    # # 
-    # # c.grp <- m1$sigma
-    # # t.grp <- coef(m1$modelStruct$varStruct, uncons = FALSE)[[1]]*m1$sigma
-    # 
-    # # true individual response to the intervention estimate
-    # sqrt(t.grp^2 - c.grp^2) 
-    # 
-    # # truth
-    # sd(sample()$beta.treatment )
-    # 
-    # return(list(m1=m1, m0=m0, m2=m2)) 
-    
-  })
-  
-  # ---------------------------------------------------------------------------
-  output$reg.lmm0 <- renderPrint({
-    
-    # return(lmm()$m0)
-    
-  })
-  
-  # ---------------------------------------------------------------------------
-  
-  output$reg.lmm1 <- renderPrint({
-    
-    # return(lmm()$m1)
-    
-  })
-  # ---------------------------------------------------------------------------
-  
-  output$reg.lmm2 <- renderPrint({
-    
-    # return(lmm()$m2)
-    
-  })
-  # ---------------------------------------------------------------------------
-  
-  output$A <- renderPrint({
-    # stats()$A
-  }) 
-  # ---------------------------------------------------------------------------
-  
-  output$C <- renderPrint({
-    # stats()$C
-  }) 
-  
-  # ---------------------------------------------------------------------------
-  
-  output$xx <- renderPrint({ 
-    
-    # m  <- stats()$Z
-    # 
-    #     return(m )
-  })
-  
-  # ---------------------------------------------------------------------------
-  
- # output$tablex <- DT::renderDataTable({
-    
-    # foo<- stats()$Z
-    # 
-    #  rownames(foo) <- NULL
-    # library(DT)
-    # 
-    # datatable(foo,
-    # 
-    #           rownames = TRUE,
-    #           #
-    #           options = list(
-    #             searching = TRUE,
-    #             pageLength = 15,
-    #             paging=TRUE,
-    #             lengthMenu = FALSE ,
-    #             lengthChange = FALSE,
-    #             autoWidth = FALSE,
-    #             #  colReorder = TRUE,
-    #             #deferRender = TRUE,
-    #             # scrollY = 200,
-    #             scroller = T
-    #           ))  %>%
-    # 
-    #   formatRound(
-    #     columns= namez,
-    #     digits=c(2,2,2,2)  )
- # })
-  
-  # ---------------------------------------------------------------------------
- # output$table1 <- DT::renderDataTable({
-    
-    # foo<- make.data()$d
-    # 
-    # namez <- c("true baseline","observed baseline","eligible","treatment group","true treatment effect\n in treated only","
-    #           true response","observed response","delta observed")
-    # names(foo) <- namez
-    #  rownames(foo) <- NULL
-    # library(DT)
-    #  
-    # datatable(foo,   
-    #             
-    #            rownames = TRUE,
-    # #           
-    #            options = list(
-    #                searching = TRUE,
-    #                pageLength = 15,
-    #                paging=TRUE,
-    #                lengthMenu = FALSE ,
-    #                lengthChange = FALSE,
-    #                autoWidth = FALSE,
-    #             #  colReorder = TRUE,
-    #              #deferRender = TRUE,
-    #                # scrollY = 200,
-    #               scroller = T
-    #            ))  %>%
-    #   
-    #      formatRound(
-    #          columns= namez,   
-    #                     digits=c(2,2,0,0,1,2,2,2)  )
-#  })
+ 
   # --------------------------------------------------------------------------
   # ---------------------------------------------------------------------------
 })
