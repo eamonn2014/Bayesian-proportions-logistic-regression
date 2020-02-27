@@ -30,53 +30,53 @@ is.even <- function(x){ x %% 2 == 0 } # function to id. odd maybe useful
 # NOT to look at change from baseline.  Baseline should always be an adjustment covariate (only).
 
 
-findBeta <- function(quantile1,quantile2,quantile3)
-{
-  # find the quantiles specified by quantile1 and quantile2 and quantile3
-  quantile1_p <- quantile1[[1]]; quantile1_q <- quantile1[[2]]
-  quantile2_p <- quantile2[[1]]; quantile2_q <- quantile2[[2]]
-  quantile3_p <- quantile3[[1]]; quantile3_q <- quantile3[[2]]
-  
-  # find the beta prior using quantile1 and quantile2
-  priorA <- beta.select(quantile1,quantile2)
-  priorA_a <- priorA[1]; priorA_b <- priorA[2]
-  
-  # find the beta prior using quantile1 and quantile3
-  priorB <- beta.select(quantile1,quantile3)
-  priorB_a <- priorB[1]; priorB_b <- priorB[2]
-  
-  # find the best possible beta prior
-  diff_a <- abs(priorA_a - priorB_a); diff_b <- abs(priorB_b - priorB_b)
-  step_a <- diff_a / 100; step_b <- diff_b / 100
-  if (priorA_a < priorB_a) { start_a <- priorA_a; end_a <- priorB_a }
-  else                     { start_a <- priorB_a; end_a <- priorA_a }
-  if (priorA_b < priorB_b) { start_b <- priorA_b; end_b <- priorB_b }
-  else                     { start_b <- priorB_b; end_b <- priorA_b }
-  steps_a <- seq(from=start_a, to=end_a, length.out=1000)
-  steps_b <- seq(from=start_b, to=end_b, length.out=1000)
-  max_error <- 10000000000000000000
-  best_a <- 0; best_b <- 0
-  for (a in steps_a)
-  {
-    for (b in steps_b)
-    {
-      # priorC is beta(a,b)
-      # find the quantile1_q, quantile2_q, quantile3_q quantiles of priorC:
-      priorC_q1 <- qbeta(c(quantile1_p), a, b)
-      priorC_q2 <- qbeta(c(quantile2_p), a, b)
-      priorC_q3 <- qbeta(c(quantile3_p), a, b)
-      priorC_error <- abs(priorC_q1-quantile1_q) +
-        abs(priorC_q2-quantile2_q) +
-        abs(priorC_q3-quantile3_q)
-      if (priorC_error < max_error)
-      {
-        max_error <- priorC_error; best_a <- a; best_b <- b
-      }
-    }
-  }
-  return(list(a= best_a , b=best_b ))
-  #print(paste("The best beta prior has a=",best_a,"b=",best_b))
-}
+# findBeta <- function(quantile1,quantile2,quantile3)
+# {
+#   # find the quantiles specified by quantile1 and quantile2 and quantile3
+#   quantile1_p <- quantile1[[1]]; quantile1_q <- quantile1[[2]]
+#   quantile2_p <- quantile2[[1]]; quantile2_q <- quantile2[[2]]
+#   quantile3_p <- quantile3[[1]]; quantile3_q <- quantile3[[2]]
+#   
+#   # find the beta prior using quantile1 and quantile2
+#   priorA <- beta.select(quantile1,quantile2)
+#   priorA_a <- priorA[1]; priorA_b <- priorA[2]
+#   
+#   # find the beta prior using quantile1 and quantile3
+#   priorB <- beta.select(quantile1,quantile3)
+#   priorB_a <- priorB[1]; priorB_b <- priorB[2]
+#   
+#   # find the best possible beta prior
+#   diff_a <- abs(priorA_a - priorB_a); diff_b <- abs(priorB_b - priorB_b)
+#   step_a <- diff_a / 100; step_b <- diff_b / 100
+#   if (priorA_a < priorB_a) { start_a <- priorA_a; end_a <- priorB_a }
+#   else                     { start_a <- priorB_a; end_a <- priorA_a }
+#   if (priorA_b < priorB_b) { start_b <- priorA_b; end_b <- priorB_b }
+#   else                     { start_b <- priorB_b; end_b <- priorA_b }
+#   steps_a <- seq(from=start_a, to=end_a, length.out=1000)
+#   steps_b <- seq(from=start_b, to=end_b, length.out=1000)
+#   max_error <- 10000000000000000000
+#   best_a <- 0; best_b <- 0
+#   for (a in steps_a)
+#   {
+#     for (b in steps_b)
+#     {
+#       # priorC is beta(a,b)
+#       # find the quantile1_q, quantile2_q, quantile3_q quantiles of priorC:
+#       priorC_q1 <- qbeta(c(quantile1_p), a, b)
+#       priorC_q2 <- qbeta(c(quantile2_p), a, b)
+#       priorC_q3 <- qbeta(c(quantile3_p), a, b)
+#       priorC_error <- abs(priorC_q1-quantile1_q) +
+#         abs(priorC_q2-quantile2_q) +
+#         abs(priorC_q3-quantile3_q)
+#       if (priorC_error < max_error)
+#       {
+#         max_error <- priorC_error; best_a <- a; best_b <- b
+#       }
+#     }
+#   }
+#   return(list(a= best_a , b=best_b ))
+#   #print(paste("The best beta prior has a=",best_a,"b=",best_b))
+# }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/packages/shinythemes/versions/1.1.2
@@ -144,13 +144,13 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                   # if you want to estimate the proportion of x, you might have a rough idea that the most likely value is around 0.85, 
                                   # but that the proportion is unlikely to be smaller than 0.60 or bigger than 0.95.
                                   
-                                  textInput('vec1', 
-                                            div(h5("Select 3 percentiles:")), "0.00001, 0.5, 0.99999"),
-                                  
-                                  textInput('vec2', 
-                                            div(h5("Now the values. for example the default is, that the most likely value is around 0.85 but the proportion 
-                 is highly unlikely to be smaller than 0.60 or bigger than 0.95")), "0.60, 0.85, 0.95"),
-                                  
+                 #                  textInput('vec1', 
+                 #                            div(h5("Select 3 percentiles:")), "0.00001, 0.5, 0.99999"),
+                 #                  
+                 #                  textInput('vec2', 
+                 #                            div(h5("Now the values. for example the default is, that the most likely value is around 0.85 but the proportion 
+                 # is highly unlikely to be smaller than 0.60 or bigger than 0.95")), "0.60, 0.85, 0.95"),
+                 #                  
                                   
                                   textInput('vec3', 
                                             div(h5("Beta parameters for treatment prior")), "1, 1"),
@@ -207,57 +207,15 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
 
                    ")),
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end of section to add colour     
-                              tabPanel("1 xxxxxxxxxxxxxxx", value=6, 
-                                       h4("An appropriate prior to use for a proportion is a Beta prior. 
-                                     For example, if you want to estimate the proportion of people who like chocolate,
- you might have a rough idea that the most likely value is around 0.85, 
- but that the proportion is unlikely to be smaller than 0.60 or bigger than 0.95. You can find the best Beta prior to use in this case by specifying that the median 
-                                        (50% percentile) of the prior is 0.85, that the 99.999% percentile is 0.95, 
-                                        and that the 0.001% percentile is 0.60 [1]."), 
-                                       
-                                       fluidRow(
-                                         #  column(width = 5,
-                                         #         div( verbatimTextOutput("reg.summary2")),
-                                         #         h4("95% CIs"),
-                                         #        div( verbatimTextOutput("reg.summary3"))
-                                         # ), 
-                                         column(width = 5,
-                                                div(plotOutput("ancova.plot", width=fig.width3, height=fig.height3))
-                                         )),
-                                       h4("Figure 1 The best Beta distibution for the selected beliefs."),
-                              ) ,
-                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end of section to add colour     
-                              tabPanel("2 xxxxxxxxxxxxxxxxxx", 
-                                       div(plotOutput("trt.plot", width=fig.width, height=fig.height)),  
-                                       h4("Figure 2 xxxxxxxxxxxxxx."),
-                                       
-                                       h3(" "),
-                                       
-                                       p(strong("xxxxxxxxxxxx.")),
-                                       
-                                       p(strong("xxxxxxxxxxxxxxx.")),
-                                       
-                                       p(strong("xxxxxxxxxxxxxxxx.")),
-                                       p(strong("xxxxxxxxxxxxxxxx.")),
-                                       
-                              ) ,
+                              # 
+                              # tabPanel("4 Results", value=3,
+                              #         # div( verbatimTextOutput("reg.summary2")),
+                              #          #    div(plotOutput("res.plot3", width=fig.width2, height=fig.height2)), 
+                              #          h4("Figure 4 Bayesian Monte Carlo Estimates"),    
+                              #       #  div( verbatimTextOutput("stats")),
+                              # ) ,
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                              tabPanel("3 Bayesian Stan Model",
-                                       #div( verbatimTextOutput("reg.summary")),
-                                       h4("Figure 3 xxxxxxxxxxxxxxxxxxxxx."),         
-                                       
-                                       
-                                       p(strong("Bayesian Monte Carlo Estimates")),
-                              ),
-                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                              tabPanel("4 Monte Carlo", value=3,
-                                      # div( verbatimTextOutput("reg.summary2")),
-                                       #    div(plotOutput("res.plot3", width=fig.width2, height=fig.height2)), 
-                                       h4("Figure 4 Bayesian Monte Carlo Estimates"),    
-                                      div( verbatimTextOutput("stats")),
-                              ) ,
-                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                              tabPanel("5 xxxxxxxxxxxxxxxxx", value=7, 
+                              tabPanel("1 Results", value=7, 
                                        h4("STAN Bayesian modelling proportions"),
                                        
                                        fluidRow(
@@ -265,33 +223,33 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                 div( verbatimTextOutput("reg.summary")),
                                                 h4("Monte Carlo approach, base R"),
                                                 div( verbatimTextOutput("reg.summary2")),
-                                                #   div( verbatimTextOutput("reg.lmm1")),
-                                                # div( verbatimTextOutput("reg.lmm2")),
-                                      # ),
-                                         # 
-                                       #fluidRow(
-                                        #column(width = 8,
+                                               
                                                   h4("STAN logistic regression modelling"),
-                                               #  div( verbatimTextOutput("reg.summary3")),
-                                                  # div( verbatimTextOutput("reg.lmm1")),
-                                              #   h4("STAN logistic regression probabilities"),
-                                                 div( verbatimTextOutput("reg.summary4"))
-                                                  #           div( verbatimTextOutput("reg.lmm2")),
+                                              
+                                                  div( verbatimTextOutput("reg.summary4"))
+                                    
                                           ))
                                       # ),
                               ) ,
+                              tabPanel("2 Results using datatable", value=3, 
+                                       #  h4("Data listing"),
+                                       h6("Sort and filter on the fly."),
+                                       DT::dataTableOutput("tablex"),
+                                       
+                                       
+                              ) ,
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                              tabPanel("6 xxxxxxxxxxxxxxxxxxxxxxx", value=6, 
+                              tabPanel("3 Diagnostics", value=6, 
                                        # div(plotOutput("reg.plot4", width=fig.width, height=fig.height)), 
                                        h4("xxxxxxxxxxxxxxxxxxxxxxx."),         
                                        div(plotOutput("dplot1", width=fig.width, height=fig.height)),  
                                        
-                                       fluidRow(
-                                         column(12,
-                                                sliderInput("senn",
-                                                            strong("Clinical relevant difference"),
-                                                            min=-10, max=10, step=.1, value=-2, ticks=FALSE))
-                                       ),
+                                       # fluidRow(
+                                       #   column(12,
+                                       #          sliderInput("senn",
+                                       #                      strong("Clinical relevant difference"),
+                                       #                      min=-10, max=10, step=.1, value=-2, ticks=FALSE))
+                                       # ),
                                        #h4("Figure 5 xxxxxxxxxxxxxxxxxx."),         
                                        
                                        p(strong(" ")),
@@ -308,31 +266,67 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                        
                               ) ,
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                              tabPanel("7 Data", value=3, 
+                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                              tabPanel("4 Caterpillar plots", value=3, 
                                        div(plotOutput("dplot2", width=fig.width, height=fig.height)),  
                                        #  DT::dataTableOutput("table1"),
                                        
-                              ) ,
+                              ) # ,
                               
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                              tabPanel("8 Results", value=3, 
-                                       #  h4("Data listing"),
-                                       h6("Sort and filter on the fly."),
-                                      DT::dataTableOutput("tablex"),
-                                       
-                                       
-                              ) 
+                              # tabPanel("7 xxxxxxxxxxxxxxxxxxxx", 
+                              #                                                
+                              #   textOutput("foo"),
+                              #       tags$style(type="text/css", "textx {white-space: pre-wrap;}"),
+                              #        htmlOutput("textx"))
+                             
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                             )
                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                   )
-                  
+                 
                 ) #
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end tab panels 
                 
 )
-
+                              
+                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #                             tabPanel("5 Model1", value=3, 
+  #                                      div( verbatimTextOutput("mod1")), 
+  #                                      #  DT::dataTableOutput("table1"),
+  #                                      
+  #                             ) ,
+  #                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #                             tabPanel("6 xxxxxxxxxxxxxxxxxxxx", 
+  #                                   
+  #                                      h4(htmlOutput("textWithNumber3",) ) ,
+  #                                      
+  #                                      htmlOutput("textx"),
+  #                             ),
+  #                                      
+  #                                    #  width = 12 ),
+  #                           
+  #                             
+  #                             tabPanel("7 xxxxxxxxxxxxxxxxxxxx", 
+  #                                      
+  #                                      textOutput("foo"),
+  #                                      tags$style(type="text/css", "textx {white-space: pre-wrap;}"),
+  #                             
+  #                             
+  #                             htmlOutput("textx"))
+  #                             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #                           #)
+  #                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #                # )
+  #                 
+  #               ) #
+  #               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end tab panels 
+  #               
+  # )
+  # 
+  #                 ) )
+  
 server <- shinyServer(function(input, output   ) {
   
   # --------------------------------------------------------------------------
@@ -342,10 +336,10 @@ server <- shinyServer(function(input, output   ) {
   random.sample <- reactive({
     
  
-    i <- as.numeric(unlist(strsplit(input$vec1,",")))
-    j <- as.numeric(unlist(strsplit(input$vec2,",")))
-    
-    trt <- as.numeric(unlist(strsplit(input$vec3,",")))
+    # i <- as.numeric(unlist(strsplit(input$vec1,",")))
+    # j <- as.numeric(unlist(strsplit(input$vec2,",")))
+    # 
+     trt <- as.numeric(unlist(strsplit(input$vec3,",")))
     ctr <- as.numeric(unlist(strsplit(input$vec4,",")))
     
     n1y1 <- as.numeric(unlist(strsplit(input$n1y1,","))) #trt
@@ -355,7 +349,7 @@ server <- shinyServer(function(input, output   ) {
     #
   
     
-    return(list( prob1=i[1],prob2=j[1],prob3=i[2],prob4=j[2],prob5=i[3],prob6=j[3],
+    return(list( #prob1=i[1],prob2=j[1],prob3=i[2],prob4=j[2],prob5=i[3],prob6=j[3],
                  trt.alpha=trt[1], trt.beta=trt[2],
                  ctr.alpha=ctr[1], ctr.beta=ctr[2],
                  n1=n1y1[1],y1=n1y1[2],
@@ -364,95 +358,6 @@ server <- shinyServer(function(input, output   ) {
     
   })
   
-  # --------------------------------------------------------------------------
-  
-  make.data <- reactive({
-    
-    sample <- random.sample()
-    #  
-    prob1 <-    sample$prob1
-    prob2 <-    sample$prob2
-    prob3 <-    sample$prob3
-    prob4<-     sample$prob4 
-    prob5<-     sample$prob5
-    prob6 <-    sample$prob6
-    prio <- sample$prio
-    
-    quantile1 <- list(p=prob1, x=prob2)    # we believe the median of the prior is 0.85
-    quantile2 <- list(p=prob3, x=prob4)    # we believe the 99.999th percentile of the prior is 0.95
-    quantile3 <- list(p=prob5, x=prob6)    #
-    
-    B <- findBeta(quantile1,quantile2,quantile3)
-    
-    return(list(a=B$a, b= B$b)) 
-    
-  })
-  
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
-  
-  output$ancova.plot <- renderPlot({         
-    
-    d  <- make.data()
-    a <- d$a
-    b <- d$b
-    
-    sample <- random.sample()
-    
-    prob1 <-    sample$prob1
-    prob2 <-    sample$prob2
-    prob3 <-    sample$prob3
-    prob4<-     sample$prob4
-    prob5<-     sample$prob5
-    prob6 <-    sample$prob6
-   # prio <- sample$prio
-    
-    #actual quantiles
-    q <- qbeta(c(prob1, prob3, prob5), a,b)  
-    
-    par(bg = 'grey')
-    curve(dbeta(x, a, b),col = "blue", xlab =paste0( "Prior based on belief that the ",prob1," quantile is ", prob2,
-                                                     " the ",prob3," quantile is ", prob4,
-                                                     " and the ",prob5," quantile is ", prob6), 
-          main=paste0("We have found the best Beta distribution with parameters (",p2(a),",",p2(b),") , the ",prob1 ,", ",  prob3," and "
-                      ,prob5," quantiles \nof this distribution are: ", p2(q[1]),", " ,p2(q[2])," and ",p2(q[3])  
-          ),
-          ylab = "Density", xlim=c(0.0,1), #ylim=c(0,5),
-    )
-  
-  })
-  
-  ##
-  output$trt.plot <- renderPlot({         
-    
-    
-    
-    sample <- random.sample()
-    trt.alpha<- sample$trt.alpha
-    trt.beta<-sample$trt.beta
-    ctr.alpha<- sample$ctr.alpha
-    ctr.beta<-sample$ctr.beta
-    #prio <- sample$prio
-    
-    par(bg = 'grey')
-    curve(dbeta(x, trt.alpha, trt.beta),col = "blue", xlab = c("Prior fot treatment, proportion of successess"), 
-          main=paste0("The Beta distribution in black with parameters (",p2(trt.alpha),",",p2(trt.beta),") and in blue (",p2(ctr.alpha),",",p2(ctr.beta),")             "  
-          ),
-          ylab = "Density", xlim=c(0.0,1), #ylim=c(0,5),
-          
-          
-    )
-    
-    curve(dbeta(x, ctr.alpha, ctr.beta),col = "black", xlab = c("Prior fot treatment, proportion of successess"), 
-          #  main=paste0("The Beta distribution with parameters (",p2(ctr.alpha),",",p2(ctr.beta),")"  
-          #  ),
-          ylab = "Density", xlim=c(0.0,1), add=TRUE#ylim=c(0,5),
-          
-          
-    )
-  })
-    
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     mcmc <- reactive({
       
@@ -535,10 +440,6 @@ server <- shinyServer(function(input, output   ) {
     alpha2 <- a1
     beta2 <- b1
     
-   
-  #  library(rstan)
-    
-    
     # The Stan model as a string.
     
     model_string <- paste0(" 
@@ -564,8 +465,8 @@ server <- shinyServer(function(input, output   ) {
         
         model {
         
-          rate ~ beta(",alpha1,",", beta1,") ;    // prior on trt
-          s ~ binomial(n, rate);  #14/25
+          rate ~ beta(",alpha1,",", beta1,") ;    // prior on treatment
+          s ~ binomial(n, rate);  
         
           rate1 ~ beta(",alpha2,",", beta2,");    // prior on placebo
           s1 ~ binomial(n1, rate1);
@@ -586,17 +487,15 @@ server <- shinyServer(function(input, output   ) {
            d = rate-rate1;
            oddsratio = (rate/(1-rate)) / (rate1/(1-rate1));
         
-        }")
+        }", collapse = "<br>")
 
-    
+   
    
     
     mod <- stan_model(model_code = model_string, verbose = FALSE)
     fit <- sampling(mod, data = list(n = n1, s = y1, n1=n2, s1=y2), refresh=0, verbose = FALSE)   
     names(fit) <- c("proportion resp Trt", "proportion resp Ctrl","Trt-Ctrl","Trt/Ctrl","Odds Ratio Trt:Ctrl" , "p(Trt>Ctrl)", "lp")
-   # fit1 <- print(fit, digits=3)
-    
-    
+
     f <- as.matrix(fit)
     
     f <- f[,c(3,4,5,6,1,2)]
@@ -615,9 +514,23 @@ server <- shinyServer(function(input, output   ) {
     
     colnames(z) <- cnamez
     
-    return(list(f=z)) 
+    return(list(f=z, model_string=model_string)) 
  
   })
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -642,14 +555,52 @@ server <- shinyServer(function(input, output   ) {
     
   })
   
-  
-  
-  
   output$dplot1 <- renderPlot({  
     
     return(stan2()$dplot1)
     
   })
+  
+  output$mod1 <- renderPrint({  
+    
+    return(stan()$model_string)
+    
+  })
+  
+  
+  # output$textWithNumber3 <- renderText({ 
+  #   
+  #   A <-  stan()$model_string
+  #       
+  #   HTML(paste0("Stan model 1 " 
+  #               , tags$span(style="color:red", (A)) ,
+  #               "  ",
+  #               "<br><b><br><b> ",
+  #               "<br><b><br><b> ",
+  #               
+  #              
+  #               ""
+  #   )) 
+  #   
+  # })
+  # 
+  
+  
+  # output$textx <- renderUI({
+  #   
+  #   A <-  stan()$model_string
+  #   
+  #   HTML(paste0("Stan model 1 " 
+  #               , tags$span(style="color:green", (A)) ,
+  #               "  ",
+  #               "<br><b><br><b> ",
+  #               "<br><b><br><b> ",
+  #               
+  #               
+  #               ""
+  #   )) 
+  #   
+  # })
   
    #--------------------------------------------------------------------
   # --------------------------------------------------------------------------
@@ -658,7 +609,6 @@ server <- shinyServer(function(input, output   ) {
   
   stan2 <- reactive({      
     
-   
     sample <- random.sample()
     a  <- trt.alpha<- sample$trt.alpha
     b  <- trt.beta<-sample$trt.beta
@@ -670,8 +620,7 @@ server <- shinyServer(function(input, output   ) {
     n2 <- sample$n2
     y2 <- sample$y2
     prio <- sample$prio
-    
-    
+
     alpha1 <- a
     beta1 <- b
     alpha2 <- a1
@@ -750,8 +699,6 @@ server <- shinyServer(function(input, output   ) {
         
 }')
 
-  
-
 # Create a list with the chosen variables
 
   data.list <- list(N = nrow(dd), y = dd$y, x = dd$x )
@@ -760,8 +707,6 @@ server <- shinyServer(function(input, output   ) {
 
     mod <- stan_model(model_code = m1, verbose = FALSE)
     fitx <- sampling(mod, data = data.list , refresh=0)
-    
-  
     
     rnamez <- c("alpha","beta","trt-ctrl","trt/ctrl", "odds ratio trt:ctrl", "p(trt>ctrl)",
                 "p(y=1|trt)","p(y=1|ctrl)","drop")
@@ -816,44 +761,6 @@ server <- shinyServer(function(input, output   ) {
 
  })
   # --------------------------------------------------------------------------
-  # --------------------------------------------------------------------------
-  # ---------------------------------------------------------------------------
-  # get some counts and percentage for observed resp and non resp
-  output$stats<- renderPrint({
-    
-    mc <- mcmc()$f1
-    s1 <- stan()$f
-    s2 <- stan2()$res
- 
-    A <- (mc)
-    B <- (s1)
-    C <- (s2)
- 
-    A <- data.frame(A)
-    B <- data.frame(B)
-    C <- data.frame(C)
-    
-    A$model <- "Bayes Monte Carlo"
-    B$model <- "Bayes proportions"
-    C$model <- "Bayes logistic reg."
-    
-    A$parameter = rownames(A)
-    B$parameter = rownames(B)
-    C$parameter = rownames(C)
-    
-    x <- rbind(A,B,C)
-    #x$parameter = rownames(x)
-    
-    names(x) <- c("Mean","p2.5","p25","p50","p75","p975","Model","parameter")
-    x <- x[,c("Model","parameter","Mean","p2.5","p25","p50","p75","p975")]
-    
-    rownames(x) <- NULL
-    x <- plyr::arrange(x, parameter, Mean)
-    print(x, digits=2)
-    
-   #return(x)
-  })
-  
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
   # listing of simulated data
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
