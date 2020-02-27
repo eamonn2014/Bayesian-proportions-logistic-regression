@@ -21,7 +21,7 @@ fig.width3 <- 800
 fig.height3 <- 545
 p1 <- function(x) {formatC(x, format="f", digits=1)}
 p2 <- function(x) {formatC(x, format="f", digits=2)}
-options(width=150)
+options(width=180)
 set.seed(12345) # reproducible
 
 pop=1e6 # this is the population size we take sample from
@@ -318,7 +318,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                               tabPanel("8 Results", value=3, 
                                        #  h4("Data listing"),
                                        h6("Sort and filter on the fly."),
-                                      # DT::dataTableOutput("table1"),
+                                      DT::dataTableOutput("tablex"),
                                        
                                        
                               ) 
@@ -1252,18 +1252,22 @@ server <- shinyServer(function(input, output   ) {
     B <- data.frame(B)
     C <- data.frame(C)
     
-    A$model <- "Monte Carlo simulation"
-    B$model <- "Bayesian proportions"
-    C$model <- "Bayesian logistic reg."
+    A$model <- "Bayes Monte Carlo"
+    B$model <- "Bayes proportions"
+    C$model <- "Bayes logistic reg."
+    
+    A$parameter = rownames(A)
+    B$parameter = rownames(B)
+    C$parameter = rownames(C)
     
     x <- rbind(A,B,C)
-    x$parameter = rownames(x)
+    #x$parameter = rownames(x)
     
     names(x) <- c("Mean","p2.5","p25","p50","p75","p975","Model","parameter")
     x <- x[,c("Model","parameter","Mean","p2.5","p25","p50","p75","p975")]
     
     rownames(x) <- NULL
-    
+    x <- plyr::arrange(x, parameter, Mean)
     print(x, digits=2)
     
    #return(x)
@@ -1272,7 +1276,7 @@ server <- shinyServer(function(input, output   ) {
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
   # listing of simulated data
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-  output$table1 <- DT::renderDataTable({
+  output$tablex <- DT::renderDataTable({
     
     mc <- mcmc()$f1
     s1 <- stan()$f
@@ -1286,26 +1290,31 @@ server <- shinyServer(function(input, output   ) {
     B <- data.frame(B)
     C <- data.frame(C)
     
-    A$model <- "Monte Carlo simulation"
-    B$model <- "Bayesian proportions"
-    C$model <- "Bayesian logistic reg."
+    A$model <- "Bayes Monte Carlo"
+    B$model <- "Bayes proportions"
+    C$model <- "Bayes logistic reg."
+    
+    A$parameter = rownames(A)
+    B$parameter = rownames(B)
+    C$parameter = rownames(C)
     
     x <- rbind(A,B,C)
-    x$parameter = rownames(x)
+    #x$parameter = rownames(x)
     
     names(x) <- c("Mean","p2.5","p25","p50","p75","p975","Model","parameter")
     x <- x[,c("Model","parameter","Mean","p2.5","p25","p50","p75","p975")]
     
-    rownames(x) <- NULL
     
+   rownames(x) <- NULL
+
     foo <- x
-    datatable(foo,   
-              
+    datatable(x,
+   
               rownames = FALSE,
-              
+   
               options = list(
                 searching = TRUE,
-                pageLength = input$V-1,
+                #pageLength = 20,
                 paging=FALSE,
                 lengthMenu = FALSE ,
                 lengthChange = FALSE,
@@ -1316,7 +1325,13 @@ server <- shinyServer(function(input, output   ) {
                 # scroller = T
               ))  %>%
       formatRound(
-        columns= c("Model","parameter","Mean","p2.5","p25","p50","p75","p975"), digits=c(0,0,3,3,3,3,3,3)  )
+    columns= c("Model","parameter","Mean","p2.5","p25","p50","p75","p975"), digits=c(0,0,3,3,3,3,3,3)  )
+    
+   # library(DT)
+    #datatable(x,   
+     #         ) %>%
+      #formatRound(
+       # columns= c("Model","parameter","Mean","p2.5","p25","p50","p75","p975"), digits=c(2)  )
   })
   
   
@@ -1419,7 +1434,7 @@ server <- shinyServer(function(input, output   ) {
   
   # ---------------------------------------------------------------------------
   
-  output$tablex <- DT::renderDataTable({
+ # output$tablex <- DT::renderDataTable({
     
     # foo<- stats()$Z
     # 
@@ -1446,10 +1461,10 @@ server <- shinyServer(function(input, output   ) {
     #   formatRound(
     #     columns= namez,
     #     digits=c(2,2,2,2)  )
-  })
+ # })
   
   # ---------------------------------------------------------------------------
-  output$table1 <- DT::renderDataTable({
+ # output$table1 <- DT::renderDataTable({
     
     # foo<- make.data()$d
     # 
@@ -1479,7 +1494,7 @@ server <- shinyServer(function(input, output   ) {
     #      formatRound(
     #          columns= namez,   
     #                     digits=c(2,2,0,0,1,2,2,2)  )
-  })
+#  })
   # --------------------------------------------------------------------------
   # ---------------------------------------------------------------------------
 })
