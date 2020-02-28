@@ -220,11 +220,11 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                        
                                        fluidRow(
                                          column(width = 8,
+                                                
                                                 div( verbatimTextOutput("reg.summary")),
-                                                h4("Monte Carlo approach, base R"),
+                                                h4("Monte Carlo approach, base R"), 
                                                 div( verbatimTextOutput("reg.summary2")),
-                                               
-                                                  h4("STAN logistic regression modelling"),
+                                                h4("STAN logistic regression modelling"),
                                               
                                                   div( verbatimTextOutput("reg.summary4"))
                                     
