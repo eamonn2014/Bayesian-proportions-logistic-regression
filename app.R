@@ -229,7 +229,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                   div( verbatimTextOutput("reg.summary4"))
                                     
                                           ))
-                                      # ),
+                                      # ), 
                               ) ,
                               tabPanel("2 Results using datatable", value=3, 
                                        #  h4("Data listing"),
