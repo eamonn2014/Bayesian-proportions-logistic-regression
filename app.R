@@ -462,7 +462,7 @@ server <- shinyServer(function(input, output   ) {
         parameters {
         
           real<lower=0, upper=1> rate;
-          real<lower=0, upper=1> rate1;
+          real<lower=0, upper=1> rate1;  
         
         }
         
