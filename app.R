@@ -21,7 +21,7 @@ fig.width3 <- 800
 fig.height3 <- 545
 p1 <- function(x) {formatC(x, format="f", digits=1)}
 p2 <- function(x) {formatC(x, format="f", digits=2)}
-options(width=180)
+options(width=200)
 set.seed(12345) # reproducible
 
 pop=1e6 # this is the population size we take sample from
@@ -219,7 +219,8 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                        h4("STAN Bayesian modelling proportions"),
                                        
                                        fluidRow(
-                                         column(width = 8,
+                                       # column(width = 9,
+                                                column(width = 9, offset = 0, style='padding:0px;',
                                                 
                                                 div( verbatimTextOutput("reg.summary")),
                                                 h4("Monte Carlo approach, base R"), 
@@ -231,6 +232,10 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                           ))
                                       # ), 
                               ) ,
+                              
+                             
+                              
+                              
                               tabPanel("2 Results using datatable", value=3, 
                                        #  h4("Data listing"),
                                        h6("Sort and filter on the fly."),
