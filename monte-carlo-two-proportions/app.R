@@ -35,7 +35,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                 # paper
                 
                 setBackgroundColor(
-                    color = c( "#2171B5", "#F7FBFF"),
+                    color = c( "#2171B5", "#F7FBFF"), 
                     gradient = "linear",
                     direction = "bottom"
                 ),
