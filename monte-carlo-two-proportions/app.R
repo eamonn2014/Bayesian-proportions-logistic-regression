@@ -48,7 +48,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                 placebo via an appropriate Beta prior. We will use an uniformative (uniform prior) for the treatment group 
                 as we know nothing about the expected event rate. Events are a good clinical outcome.
                 We fix the sample size and investigate the posterior distribtution of the difference in proportions, the ratio and the odds ratio.
-                We have observed 10 clincial events in 50 patients in the placebo arm of the earlier, we will therefore use a Beta(11, 41) for the placebo prior
+                We have observed 10 clincial events in 50 patients in the placebo arm of the earlier trial, we will therefore use a Beta(11, 41) for the placebo prior
                 to plan our new study.
               "), 
                 
