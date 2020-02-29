@@ -118,7 +118,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                   actionButton(inputId='ab1', label="R code",   icon = icon("th"),   
                                                onclick ="window.open('https://github.com/eamonn2014/Bayesian-proportions-logistic-regression/blob/master/monte-carlo-two-proportions/app.R', '_blank')"),    
                                   actionButton("resample", "Rerun the Monte Carlo simulations"),
-                                  br(), # br(),
+                                  br(), # br(), 
                                   tags$style(".well {background-color:#b6aebd ;}"), ##ABB0B4AF
                                   
                                   h4("An appropriate prior to use for a proportion is a Beta prior. We help you select a Beta prior"),

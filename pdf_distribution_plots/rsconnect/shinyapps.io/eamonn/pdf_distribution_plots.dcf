@@ -1,0 +1,12 @@
+name: pdf_distribution_plots
+title: pdf_distribution_plots
+username:
+account: eamonn
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1863373
+bundleId: 2829909
+url: https://eamonn.shinyapps.io/pdf_distribution_plots/
+when: 1582674504.42755
+asMultiple: FALSE
+asStatic: FALSE
