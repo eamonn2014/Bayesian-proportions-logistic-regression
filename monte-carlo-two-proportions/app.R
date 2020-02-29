@@ -15,7 +15,7 @@ rstan_options(auto_write = TRUE)
 options(max.print=1000000)
 fig.width <- 400
 fig.height <- 300
-fig.width2 <- 1000
+fig.width2 <- 1400
 fig.height2 <- 350
 fig.width3 <- 1300  
 fig.height3 <- 545
@@ -77,6 +77,15 @@ is.even <- function(x){ x %% 2 == 0 } # function to id. odd maybe useful
 #   return(list(a= best_a , b=best_b ))
 #   #print(paste("The best beta prior has a=",best_a,"b=",best_b))
 # }
+
+# n1 = 52 # men
+# y1 = 9  # left-handed men
+# n2 = 48 # women
+# y2 = 4  # left-handed women
+
+#52, 9
+#48, 4
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/packages/shinythemes/versions/1.1.2
@@ -152,6 +161,18 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       # is highly unlikely to be smaller than 0.60 or bigger than 0.95")), "0.60, 0.85, 0.95"),
                                       #                  
                                       
+                                      # textInput('vec3', 
+                                      #           div(h5("Beta parameters for treatment prior")), "1, 1"),
+                                      # 
+                                      # textInput('vec4', 
+                                      #           div(h5("Beta parameters for control prior")), "10, 43"),
+                                      # 
+                                      # textInput('n1y1', 
+                                      #           div(h5("Treatment sample size and responders")), "25, 14"),
+                                      # 
+                                      # textInput('n2y2', 
+                                      #           div(h5("Control sample size and responders")), "25, 4"),
+                                      
                                       textInput('vec3', 
                                                 div(h5("Beta parameters for treatment prior")), "1, 1"),
                                       
@@ -159,28 +180,28 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                 div(h5("Beta parameters for control prior")), "10, 43"),
                                       
                                       textInput('n1y1', 
-                                                div(h5("grp1 sample size and successess")), "25, 14"),
+                                                div(h5("Treatment sample size and responders")), "52, 9"),
                                       
                                       textInput('n2y2', 
-                                                div(h5("grp2 sample size and successess")), "25, 4"),
+                                                div(h5("Control sample size and responders")), "48, 4"),
                                       
                                       # textInput('prio', 
                                       #           div(h5("type in prior for intercept...examples\nnormal(0,5)\ncauchy(0,2.5)\n")), "student_t(3,0,2.5)"),
                                       # 
                                       div(h5("References:")),  
                                       
-                                      tags$a(href = "https://a-little-book-of-r-for-bayesian-statistics.readthedocs.io/en/latest/src/bayesianstats.html", "[1] Using R for Bayesian Statistics"),
+                                      tags$a(href = "https://lingpipe-blog.com/2009/10/13/bayesian-counterpart-to-fisher-exact-test-on-contingency-tables/", "[1] Ling Pipe"),
                                       div(p(" ")),
-                                      tags$a(href = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC524113/pdf/bmj32900966.pdf", "[2] Individual response to treatment: is it a valid assumption?"),
+                                      tags$a(href = "https://statmodeling.stat.columbia.edu/2009/10/13/what_is_the_bay/", "[2] Gelman"),
                                       div(p(" ")),
-                                      tags$a(href = "https://www.youtube.com/watch?v=uiCd9m6tmt0&feature=youtu.be", "[3] Professor George Davey Smith - Some constraints on the scope and potential of personalised medicine"),
-                                      div(p(" ")),
-                                      tags$a(href = "https://physoc.onlinelibrary.wiley.com/doi/epdf/10.1113/EP085070", "[4] True and false interindividual differences in the physiological response to an intervention"),
-                                      div(p(" ")),
-                                      tags$a(href = "https://twitter.com/f2harrell/status/1220700181496320001", "[5] Purpose of RCT"),
-                                      div(p(" ")),
-                                      tags$a(href = "https://www.nature.com/magazine-assets/d41586-018-07535-2/d41586-018-07535-2.pdf", "[6] Statistical pitfalls of personalized medicine"),
-                                      div(p(" ")),
+                                      tags$a(href = "https://en.wikipedia.org/wiki/Beta_distribution", "[3] Beta distribution"),
+                                       div(p(" ")),
+                                      # tags$a(href = "https://physoc.onlinelibrary.wiley.com/doi/epdf/10.1113/EP085070", "[4] True and false interindividual differences in the physiological response to an intervention"),
+                                      # div(p(" ")),
+                                      # tags$a(href = "https://twitter.com/f2harrell/status/1220700181496320001", "[5] Purpose of RCT"),
+                                      # div(p(" ")),
+                                      # tags$a(href = "https://www.nature.com/magazine-assets/d41586-018-07535-2/d41586-018-07535-2.pdf", "[6] Statistical pitfalls of personalized medicine"),
+                                      # div(p(" ")),
                                   )
                                   
                     ),
@@ -215,7 +236,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                   #       #  div( verbatimTextOutput("stats")),
                                   # ) ,
                                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  tabPanel("1 Priors", value=7, 
+                                  tabPanel("1 Prior and posterior analytic distributions", value=7, 
                                            #  h4("Priors"),
                                            
                                            fluidRow(
@@ -225,12 +246,12 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                column(width = 7, offset = 0, style='padding:0px;',
                                                       
                                                       h4("Prior distributions"), 
-                                                      div(plotOutput("trt.plot1", width=fig.width2, height=fig.height2)), 
+                                                      div(plotOutput("trt.plot", width=fig.width2, height=fig.height2)), 
                                                      # div( verbatimTextOutput("reg.summary2")),
                                                       # h4("STAN logistic regression modelling"),
                                                       
                                                       h4("Posterior distributions updated with observed data"), 
-                                                      div(plotOutput("trt.plot", width=fig.width2, height=fig.height2)),       
+                                                      div(plotOutput("trt.plot1", width=fig.width2, height=fig.height2)),       
                                                       
                                                       #  div( verbatimTextOutput("reg.summary4"))
                                                       
@@ -238,25 +259,27 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            # ), 
                                   ) ,
                                   
-                                  tabPanel("1 Posterior distributions", value=7, 
+                                  tabPanel("2 Quantities of interest generated from posteriors", value=7, 
                                          #  h4("Priors"),
                                            
                                            fluidRow(
-                                             #  column(width = 5, offset = 0, style='padding:1px;',
-                                                 #      div(plotOutput("trt.plot", width=fig.width, height=fig.height))),  
+                                               column(width = 5, offset = 0, style='padding:1px;',
+                                            
+                                               h4("Posterior distributions summaries"), 
+                                               div( verbatimTextOutput("reg.summary2")))),
                                                
-                                               column(width = 7, offset = 0, style='padding:0px;',
+                                              # column(width = 7, offset = 0, style='padding:0px;',
                                           
-                                                      h4("Posterior distributions summaries"), 
-                                                      div( verbatimTextOutput("reg.summary2")),
+                                                  
                                                      # h4("STAN logistic regression modelling"),
                                                       
-                                                     h4("Posterior distributions : 1 risk difference (trt-ctrl); 2 relative risk (trt/ctrl); 3 odds ratio [odds(trt)/odds(ctrl)]"), 
+                                                     h4(paste("Posterior distributions : 1 risk difference (trt-ctrl);","2 relative risk (trt/ctrl); 3 odds ratio [odds(trt)/odds(ctrl)]")), 
                                                      div(plotOutput("diff", width=fig.width3, height=fig.height3)),       
                                                      
                                                     #  div( verbatimTextOutput("reg.summary4"))
                                                       
-                                               ))
+                                              # )
+                                               #)
                                            # ), 
                                   ) ,
                                   
@@ -269,42 +292,42 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            DT::dataTableOutput("tablex"),
                                            
                                            
-                                  ) ,
+                                  )# ,
                                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  tabPanel("3 Diagnostics", value=6, 
-                                           # div(plotOutput("reg.plot4", width=fig.width, height=fig.height)), 
-                                           h4("xxxxxxxxxxxxxxxxxxxxxxx."),         
-                                         #  div(plotOutput("trt.plot", width=fig.width, height=fig.height)),  
-                                           
-                                           # fluidRow(
-                                           #   column(12,
-                                           #          sliderInput("senn",
-                                           #                      strong("Clinical relevant difference"),
-                                           #                      min=-10, max=10, step=.1, value=-2, ticks=FALSE))
-                                           # ),
-                                           #h4("Figure 5 xxxxxxxxxxxxxxxxxx."),         
-                                           
-                                           p(strong(" ")),
-                                           p(strong("xxxxxxxxxxxxxxxxx.")),
-                                           
-                                           p(strong("xxxxxxxxxxxxxxxxxxxxxx"
-                                           )),
-                                           
-                                           
-                                           h4("xxxxxxxxxxxxxxxxxxxxxxx"),
-                                           #    div( verbatimTextOutput("senn.est")),
-                                           h4("xxxxxxxxxxxxxxxxxxxx"),
-                                           #    div( verbatimTextOutput("senn.est2"))
-                                           
-                                  ) ,
-                                  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  tabPanel("4 Caterpillar plots", value=3, 
-                                          # div(plotOutput("dplot2", width=fig.width, height=fig.height)),  
-                                           #  DT::dataTableOutput("table1"),
-                                           
-                                  ) # ,
-                                  
+                                  # tabPanel("3 Diagnostics", value=6, 
+                                  #          # div(plotOutput("reg.plot4", width=fig.width, height=fig.height)), 
+                                  #          h4("xxxxxxxxxxxxxxxxxxxxxxx."),         
+                                  #        #  div(plotOutput("trt.plot", width=fig.width, height=fig.height)),  
+                                  #          
+                                  #          # fluidRow(
+                                  #          #   column(12,
+                                  #          #          sliderInput("senn",
+                                  #          #                      strong("Clinical relevant difference"),
+                                  #          #                      min=-10, max=10, step=.1, value=-2, ticks=FALSE))
+                                  #          # ),
+                                  #          #h4("Figure 5 xxxxxxxxxxxxxxxxxx."),         
+                                  #          
+                                  #          p(strong(" ")),
+                                  #          p(strong("xxxxxxxxxxxxxxxxx.")),
+                                  #          
+                                  #          p(strong("xxxxxxxxxxxxxxxxxxxxxx"
+                                  #          )),
+                                  #          
+                                  #          
+                                  #          h4("xxxxxxxxxxxxxxxxxxxxxxx"),
+                                  #          #    div( verbatimTextOutput("senn.est")),
+                                  #          h4("xxxxxxxxxxxxxxxxxxxx"),
+                                  #          #    div( verbatimTextOutput("senn.est2"))
+                                  #          
+                                  # ) ,
+                                  # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                  # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                  # tabPanel("4 Caterpillar plots", value=3, 
+                                  #         # div(plotOutput("dplot2", width=fig.width, height=fig.height)),  
+                                  #          #  DT::dataTableOutput("table1"),
+                                  #          
+                                  # ) # ,
+                                  # 
                                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                   # tabPanel("7 xxxxxxxxxxxxxxxxxxxx", 
                                   #                                                
@@ -367,6 +390,7 @@ server <- shinyServer(function(input, output   ) {
     # This is where a new sample is instigated 
     random.sample <- reactive({
         
+        foo <- input$resample
         
         # i <- as.numeric(unlist(strsplit(input$vec1,",")))
         # j <- as.numeric(unlist(strsplit(input$vec2,",")))
@@ -377,7 +401,7 @@ server <- shinyServer(function(input, output   ) {
         n1y1 <- as.numeric(unlist(strsplit(input$n1y1,","))) #trt
         n2y2 <- as.numeric(unlist(strsplit(input$n2y2,",")))
         
-        prio <- as.character(input$prio)
+       # prio <- as.character(input$prio)
         #
         
         
@@ -385,7 +409,7 @@ server <- shinyServer(function(input, output   ) {
             trt.alpha=trt[1], trt.beta=trt[2],
             ctr.alpha=ctr[1], ctr.beta=ctr[2],
             n1=n1y1[1],y1=n1y1[2],
-            n2=n2y2[1],y2=n2y2[2], prio=prio
+            n2=n2y2[1],y2=n2y2[2]#, prio=prio
         )) 
         
     })
@@ -394,6 +418,7 @@ server <- shinyServer(function(input, output   ) {
     mcmc <- reactive({
         
         sample <- random.sample()
+        
         a  <- trt.alpha<- sample$trt.alpha
         b  <- trt.beta<-sample$trt.beta
         a1 <- sample$ctr.alpha
@@ -405,20 +430,29 @@ server <- shinyServer(function(input, output   ) {
         y2 <- sample$y2
         
         
-        I = 100000                               # simulations
+        I = 500000                               # simulations
         
         theta1 = rbeta(I, y1+a, n1-y1+b)        # incorp. prior for trt
         theta2 = rbeta(I, y2+a1, n2-y2+b1)      # incorp. prior for placebo
-        diff = theta1-theta2                    # simulated differences
-        ratio = theta1/theta2 
-        or <- (theta1/ (1-theta1)) / (theta2/(1-theta2))
-        ptrt <- theta1>theta2
+        diff =   theta1-theta2                    # simulated differences
+        ratio =  theta1/theta2 
+        or <-   (theta1/ (1-theta1)) / (theta2/(1-theta2))
+        ptrt <-  theta1>theta2
+        prob.ratio <- (theta1/theta2 )>1
+        prob.or <-  ((theta1/ (1-theta1)) / (theta2/(1-theta2))) > 2
         
+        f <- data.frame(cbind( diff, ratio, or ,ptrt, prob.ratio, prob.or , theta1, theta2))
         
-        f <- data.frame(cbind( diff, ratio, or ,ptrt, theta1, theta2))
-        
-        rnamez <- c( "trt-ctrl","trt/ctrl", "odds ratio trt:ctrl", "p(trt>ctrl)",
+        rnamez <- c( "risk differnece trt-ctrl","relative risk trt/ctrl", "odds ratio trt:ctrl", 
+                     "p(trt > ctrl)", "pr(risk ratio > 1)", "pr(odds ratio > 1)",
                      "p(y=1|trt)","p(y=1|ctrl)" )
+        
+        f <- data.frame(cbind( diff, ratio, or ,ptrt,  theta1, theta2))
+        
+        rnamez <- c( "risk differnece trt-ctrl","relative risk trt/ctrl", "odds ratio trt:ctrl", 
+                     "p(trt > ctrl)", #"pr(risk ratio > 1)", "pr(odds ratio > 1)",
+                     "p(y=1|trt)","p(y=1|ctrl)" )
+        
         cnamez <- c("Mean","2.5%","25%","50%","75%","97.5%")
         
         clean <- function(x) { c(mean(x), quantile(x,c(.025, 0.25, 0.5, 0.75, 0.975))) }
@@ -440,12 +474,13 @@ server <- shinyServer(function(input, output   ) {
         
     })
     
+    
     output$diff <- renderPlot({         
         
         z <- mcmc()$diff
        
         q <- quantile(z,c(.025, 0.25, 0.5, 0.75, 0.975))
-        
+        par(bg = 'lightgoldenrodyellow') 
         par(mfrow=c(1,3))
          plot(density(z),
               xlab="risk differnece trt - ctrl",
@@ -484,7 +519,7 @@ server <- shinyServer(function(input, output   ) {
          abline(v=q[1], col="blue") #95% credible interval
          abline(v=q[5], col="blue")
          abline(v=1, col="red", lty='dashed')
-         
+         captio=("xxxx")
          
          
          
@@ -501,47 +536,73 @@ server <- shinyServer(function(input, output   ) {
         
     })
     
+   
+ 
+    
+    
     output$trt.plot <- renderPlot({         
         
+        sample <- random.sample()
+       
+        x<- seq(0,1, length.out=10000)
+        
+        trt.alpha<- sample$trt.alpha
+        trt.beta<-  sample$trt.beta
+        ctr.alpha<- sample$ctr.alpha
+        ctr.beta<-  sample$ctr.beta
+        
+  
+        tmp1 <- max(c(dbeta(x, trt.alpha, trt.beta)  ) )
+        tmp2 <- max(c(dbeta(x, ctr.alpha, ctr.beta)))
+        tmp <- max(tmp1, tmp2)
+         
+        par(bg = 'lightgoldenrodyellow')
+       
+        curve(dbeta(x, trt.alpha, trt.beta),col = "blue", xlab = c("Prior fot treatment, proportion of successess"), 
+              main=paste0("The Beta distribution for treatment in blue with shape parameters (",p2(trt.alpha),",",p2(trt.beta),") and control in black (",p2(ctr.alpha),",",p2(ctr.beta),")             "  
+              ),
+              ylab = "Density", xlim=c(0.0,1),  ylim=c(0, (tmp)*1.1) #ylim=c(0, max(
+        )
+        curve(dbeta(x, ctr.alpha, ctr.beta),col = "black", xlab = c("Probabiity"), 
+                
+              ylab = "Density",  add=TRUE
+        )
+        
+    })
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    output$trt.plot1 <- renderPlot({         
+        
+        x<- seq(0,1, length.out=10000)
         
         sample <- random.sample()
-        a  <- trt.alpha<- sample$trt.alpha
-        b  <- trt.beta<-sample$trt.beta
+        
+        a  <- sample$trt.alpha
+        b  <- sample$trt.beta
         a1 <- sample$ctr.alpha
         b1 <- sample$ctr.beta
         
-        n1 <- sample$n1  #trt
+        n1 <- sample$n1   
         y1 <- sample$y1
         n2 <- sample$n2
         y2 <- sample$y2
         
-        #trt.alpha<- sample$trt.alpha
-        #trt.beta<-sample$trt.beta
-        #ctr.alpha<- sample$ctr.alpha
-        #ctr.beta<-sample$ctr.beta
+        tmp1 <- max(c(dbeta(x,y1+a,  n1-y1+b)  ) )
+        tmp2 <- max(c(dbeta(x,y2+a1, n2-y2+b1)))
+        tmp <- max(tmp1, tmp2)
         
+        par(bg = 'lightgoldenrodyellow') 
         
-        # theta1 = dbeta(x,y1+a,  n1-y1+b )        # incorp. prior for trt
-        # theta2 = dbeta(x,y2+a1, n2-y2+b1) 
-        # 
-        
-        
-        tmp1 <- c(dbeta(x,y1+a,  n1-y1+b) , dbeta(x,y2+a1, n2-y2+b1))
-          
-        
-        par(bg = 'grey')
         curve(dbeta(x, y1+a, n1-y1+b),col = "blue", xlab = c("Prior fot treatment, proportion of successess"), 
-              main=paste0("The Beta distribution for treatment in black with parameters (",p2(y1+a),",",p2(n1-y1+b),") and control in blue (",p2(y2+a1),",",p2(n2-y2+b1),")"  
+              main=paste0("The Beta distribution for treatment in blue with shape parameters (",p2(y1+a),",",p2(n1-y1+b),") and control in black (",p2(y2+a1),",",p2(n2-y2+b1),")"  
               ),
-              ylab = "Density", xlim=c(0.0,1),  ylim=c(0, max(tmp1)*1.3) #ylim=c(0, max(tmp1)),
+              ylab = "Density", xlim=c(0.0,1),  ylim=c(0, (tmp)*1.1) #ylim=c(0, max(tmp1)),
               
               
         )
         
-        curve(dbeta(x, y2+a1,  n2-y2+b1),col = "black", xlab = c("Prior fot treatment, proportion of successess"), 
-              #  main=paste0("The Beta distribution with parameters (",p2(ctr.alpha),",",p2(ctr.beta),")"  
-              #  ),
-              ylab = "Density", add=TRUE, #xlim=c(0.0,1), add=TRUE, ylim=c(0, max(tmp1)),
+        curve(dbeta(x, y2+a1,  n2-y2+b1),col = "black", xlab = c("Probabiity"), 
+           
+              ylab = "Density" , add=TRUE
               
               
               
@@ -551,52 +612,6 @@ server <- shinyServer(function(input, output   ) {
         
         
     })
-        
- 
-    
-    
-    output$trt.plot1 <- renderPlot({         
-        
-        
-        
-        sample <- random.sample()
-        
-        trt.alpha<- sample$trt.alpha
-        trt.beta<-sample$trt.beta
-        
-        ctr.alpha<- sample$ctr.alpha
-        ctr.beta<-sample$ctr.beta
-        
-        
-        
-        
-        tmp1 <- c(dbeta(x, trt.alpha, trt.beta) , dbeta(x, ctr.alpha, ctr.beta))
-        
-        
-        par(bg = 'grey')
-        curve(dbeta(x, trt.alpha, trt.beta),col = "blue", xlab = c("Prior fot treatment, proportion of successess"), 
-              main=paste0("The Beta distribution for treatment in black with parameters (",p2(trt.alpha),",",p2(trt.beta),") and control in blue (",p2(ctr.alpha),",",p2(ctr.beta),")             "  
-              ),
-              ylab = "Density", xlim=c(0.0,1),  ylim=c(0, max(tmp1)*1.3) #ylim=c(0, max(
-              
-              
-        )
-        
-        curve(dbeta(x, ctr.alpha, ctr.beta),col = "black", xlab = c("Prior fot treatment, proportion of successess"), 
-              #  main=paste0("The Beta distribution with parameters (",p2(ctr.alpha),",",p2(ctr.beta),")"  
-              #  ),
-              ylab = "Density", add=TRUE,#xlim=c(0.0,1), add=TRUE, ylim=c(0,max(tmp1) ),
-              
-              
-              
-              
-        )
-        
-        
-        
-    })
-    
-    
     
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -958,7 +973,7 @@ server <- shinyServer(function(input, output   ) {
         # B <- data.frame(B)
         # C <- data.frame(C)
         
-        A$model <- "Bayes Monte Carlo"
+        A$model <- "Bayesian Monte Carlo"
         # B$model <- "Bayes proportions"
         # C$model <- "Bayes logistic reg."
         # 
