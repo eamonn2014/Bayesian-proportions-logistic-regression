@@ -115,7 +115,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                   #The first slider sets the power and the next alpha level, so we can power the trial as we wish. 
                                   h4("xxxxxxxxxxxxxxxxxx."),
                                   
-                                  actionButton(inputId='ab1', label="R code",   icon = icon("th"), 
+                                  actionButton(inputId='ab1', label="R code",   icon = icon("th"),   
                                                onclick ="window.open('https://github.com/eamonn2014/Bayesian-proportions-logistic-regression/blob/master/monte-carlo-two-proportions/app.R', '_blank')"),    
                                   actionButton("resample", "Rerun the Monte Carlo simulations"),
                                   br(), # br(),
