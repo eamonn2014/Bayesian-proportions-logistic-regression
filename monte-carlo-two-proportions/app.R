@@ -180,10 +180,10 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                 div(h5("Beta parameters for control prior")), "10, 43"),
                                       
                                       textInput('n1y1', 
-                                                div(h5("Treatment sample size and responders")), "52, 9"),
+                                                div(h5("Treatment sample size and no of events")), "52, 9"),
                                       
                                       textInput('n2y2', 
-                                                div(h5("Control sample size and responders")), "48, 4"),
+                                                div(h5("Control sample size and no of events")), "48, 4"),
                                       
                                       # textInput('prio', 
                                       #           div(h5("type in prior for intercept...examples\nnormal(0,5)\ncauchy(0,2.5)\n")), "student_t(3,0,2.5)"),
@@ -196,8 +196,8 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       div(p(" ")),
                                       tags$a(href = "https://en.wikipedia.org/wiki/Beta_distribution", "[3] Beta distribution"),
                                        div(p(" ")),
-                                      # tags$a(href = "https://physoc.onlinelibrary.wiley.com/doi/epdf/10.1113/EP085070", "[4] True and false interindividual differences in the physiological response to an intervention"),
-                                      # div(p(" ")),
+                                       tags$a(href = "https://www.tjmahr.com/bayesian-fisher-exact-test/", "[4] Blog article"),
+                                       div(p(" ")),
                                       # tags$a(href = "https://twitter.com/f2harrell/status/1220700181496320001", "[5] Purpose of RCT"),
                                       # div(p(" ")),
                                       # tags$a(href = "https://www.nature.com/magazine-assets/d41586-018-07535-2/d41586-018-07535-2.pdf", "[6] Statistical pitfalls of personalized medicine"),
@@ -275,7 +275,8 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                       
                                                      h4(paste("Posterior distributions : 1 risk difference (trt-ctrl);","2 relative risk (trt/ctrl); 3 odds ratio [odds(trt)/odds(ctrl)]")), 
                                                      div(plotOutput("diff", width=fig.width3, height=fig.height3)),       
-                                                     
+                                         
+                                         h6(paste("Blue vertical lines demark 95% credible intervals, red dashed lines are population values of interest")), 
                                                     #  div( verbatimTextOutput("reg.summary4"))
                                                       
                                               # )
@@ -443,13 +444,13 @@ server <- shinyServer(function(input, output   ) {
         
         f <- data.frame(cbind( diff, ratio, or ,ptrt, prob.ratio, prob.or , theta1, theta2))
         
-        rnamez <- c( "risk differnece trt-ctrl","relative risk trt/ctrl", "odds ratio trt:ctrl", 
+        rnamez <- c( "risk difference trt-ctrl","relative risk trt/ctrl", "odds ratio trt:ctrl", 
                      "p(trt > ctrl)", "pr(risk ratio > 1)", "pr(odds ratio > 1)",
                      "p(y=1|trt)","p(y=1|ctrl)" )
         
         f <- data.frame(cbind( diff, ratio, or ,ptrt,  theta1, theta2))
         
-        rnamez <- c( "risk differnece trt-ctrl","relative risk trt/ctrl", "odds ratio trt:ctrl", 
+        rnamez <- c( "risk difference trt-ctrl","relative risk trt/ctrl", "odds ratio trt:ctrl", 
                      "p(trt > ctrl)", #"pr(risk ratio > 1)", "pr(odds ratio > 1)",
                      "p(y=1|trt)","p(y=1|ctrl)" )
         
@@ -511,7 +512,7 @@ server <- shinyServer(function(input, output   ) {
          q <- quantile(z,c(.025, 0.25, 0.5, 0.75, 0.975))
          
          plot(density(z),   log="x",
-              xlab="Odds ratio",
+              xlab="odds ratio",
               ylab="p(odds trt / odds ctrl | y, n)",
               main="",
               ylim=c(0, max(density(z)$y)),
@@ -558,7 +559,7 @@ server <- shinyServer(function(input, output   ) {
          
         par(bg = 'lightgoldenrodyellow')
        
-        curve(dbeta(x, trt.alpha, trt.beta),col = "blue", xlab = c("Prior fot treatment, proportion of successess"), 
+        curve(dbeta(x, trt.alpha, trt.beta),col = "blue", xlab = c("Probabiity"), 
               main=paste0("The Beta distribution for treatment in blue with shape parameters (",p2(trt.alpha),",",p2(trt.beta),") and control in black (",p2(ctr.alpha),",",p2(ctr.beta),")             "  
               ),
               ylab = "Density", xlim=c(0.0,1),  ylim=c(0, (tmp)*1.1) #ylim=c(0, max(
@@ -592,7 +593,7 @@ server <- shinyServer(function(input, output   ) {
         
         par(bg = 'lightgoldenrodyellow') 
         
-        curve(dbeta(x, y1+a, n1-y1+b),col = "blue", xlab = c("Prior fot treatment, proportion of successess"), 
+        curve(dbeta(x, y1+a, n1-y1+b),col = "blue", xlab = c("Probabiity"), 
               main=paste0("The Beta distribution for treatment in blue with shape parameters (",p2(y1+a),",",p2(n1-y1+b),") and control in black (",p2(y2+a1),",",p2(n2-y2+b1),")"  
               ),
               ylab = "Density", xlim=c(0.0,1),  ylim=c(0, (tmp)*1.1) #ylim=c(0, max(tmp1)),
