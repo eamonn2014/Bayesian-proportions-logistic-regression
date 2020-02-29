@@ -18,7 +18,7 @@ fig.height <- 300
 fig.width2 <- 1400
 fig.height2 <- 350
 fig.width3 <- 1300  
-fig.height3 <- 545
+fig.height3 <- 400
 fig.width4 <- 1380
 fig.height4 <- 300
 p1 <- function(x) {formatC(x, format="f", digits=1)}
