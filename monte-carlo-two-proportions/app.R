@@ -243,7 +243,7 @@ server <- shinyServer(function(input, output   ) {
         diff =   theta1-theta2                    # simulated differences
         ratio =  theta1/theta2 
         or <-   (theta1/ (1-theta1)) / (theta2/(1-theta2))
-        ptrt <-  theta1>theta2
+        ptrt <- mean( theta1>theta2)
         prob.ratio <- (theta1/theta2 )>1
         prob.or <-  ((theta1/ (1-theta1)) / (theta2/(1-theta2))) > 2
         
