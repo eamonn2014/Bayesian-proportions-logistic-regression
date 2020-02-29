@@ -64,7 +64,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                 
                                   
                                   actionButton(inputId='ab1', label="R code",   icon = icon("th"),   
-                                               onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Bayesian-proportions-logistic-regression/master/monte-carlo-two-proportions/app.R?token=ABVUVOUSJN5RUZUER2LD42K6LLGWU', '_blank')"),    
+                                               onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Bayesian-proportions-logistic-regression/master/monte-carlo-two-proportions/app.R?token=ABVUVOQFYFIQVQ3Y42P66QS6LLO7S', '_blank')"),    
                                   actionButton("resample", "Rerun the Monte Carlo simulations"),
                                   br(), # br(), 
                                   tags$style(".well {background-color:#b6aebd ;}"), ##ABB0B4AF
