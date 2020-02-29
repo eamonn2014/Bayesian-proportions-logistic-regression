@@ -42,14 +42,13 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                 
                 h2("Estimates of and tests of proportions Bayesian style"),
                 
-                h4("Imagine planning a clinicial trial. From a previous clinical trail on the disease we observed
-                clinical events on the placebo arm but we have no knowledge for the new drug. We plan a study, using the information
-                from the earlier study for the 
-                placebo via an appropriate Beta prior. We will use an uniformative (uniform prior) for the treatment group 
-                as we know nothing about the expected event rate. Events are a good clinical outcome.
+                h4("Imagine planning a clinicial trial. From a previous clinical trail studying the disease we observed
+                clinical events on the placebo arm but we have no knowledge for the new drug. Here the clincial events are a good clinical outcome. We plan a study, using the information
+                from the earlier study via an appropriate Beta prior for the placebo. We will use an uniformative (uniform prior) for the treatment group 
+                as we know nothing about the expected event rate. It is hoped that we will see an 30% event rate with the new treatment. 
                 We fix the sample size and investigate the posterior distribtution of the difference in proportions, the ratio and the odds ratio.
-                We have observed 10 clincial events in 50 patients in the placebo arm of the earlier trial, we will therefore use a Beta(11, 41) for the placebo prior
-                to plan our new study.
+                We observed 10 clincial events in 50 patients (20%) in the placebo arm of the earlier trial, we will therefore use a Beta(11, 41) for the placebo prior
+                to plan our new study. With a sample size of 50 per arm, can we expect p(efficacy) > 0.95?
               "), 
                 
                 h3("  "), 
@@ -87,10 +86,10 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                 div(h5("Beta parameters for control prior")), "11, 41"),
                                       
                                       textInput('n1y1', 
-                                                div(h5("Treatment sample size and no of events")), "50, 9"),
+                                                div(h5("Treatment sample size and no of events")), "50, 15"),
                                       
                                       textInput('n2y2', 
-                                                div(h5("Control sample size and no of events")), "50, 4"),
+                                                div(h5("Control sample size and no of events")), "50, 10"),
                                       
                                    
                                       div(h5("References:")),  
@@ -158,7 +157,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            fluidRow(
                                                column(width = 5, offset = 0, style='padding:1px;',
                                             
-                                               h4("Posterior distributions summaries"), 
+                                               h4("Posterior distributions summaries, P(efficacy) will be judged by P(trt>ctrl)"), 
                                                div( verbatimTextOutput("reg.summary2")))),
                                                
                                              
@@ -177,6 +176,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                   tabPanel("2 Results using datatable", value=3, 
                                      
                                            h6("Sort and filter on the fly."),
+                                           h4("Posterior distributions summaries, p(efficacy) will be judged by p(trt>ctrl)"), 
                                            DT::dataTableOutput("tablex"),
                                            h4(paste("Posterior distributions : 1 risk difference (trt-ctrl);","2 relative risk (trt/ctrl); 3 odds ratio [odds(trt)/odds(ctrl)]")), 
                                            div(plotOutput("diff2", width=fig.width4, height=fig.height4)),  
