@@ -42,7 +42,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                 
                 h2("Estimates of and tests of proportions Bayesian style"),
                 
-                h4("Imagine planning a randomised clinicial trial with equal recruitment to a treatment arm and control arm. From a previous clinical trail studying 
+                h4("Imagine planning a randomised clinicial trial with equal recruitment to a treatment arm and control arm. From a previous clinical trial studying 
                 the disease we observed
                 clinical events on the placebo arm but we have no knowledge for the new drug. Here clincial events are a good clinical outcome. 
                 We plan a new study, using the information
