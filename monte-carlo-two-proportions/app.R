@@ -116,8 +116,8 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                   h4("xxxxxxxxxxxxxxxxxx."),
                                   
                                   actionButton(inputId='ab1', label="R code",   icon = icon("th"), 
-                                               onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/responder-non-responder-fallacy-in-RCTs/master/app.R', '_blank')"),    
-                                  actionButton("resample", "Simulate a new sample"),
+                                               onclick ="window.open('https://github.com/eamonn2014/Bayesian-proportions-logistic-regression/blob/master/monte-carlo-two-proportions/app.R', '_blank')"),    
+                                  actionButton("resample", "Rerun the Monte Carlo simulations"),
                                   br(), # br(),
                                   tags$style(".well {background-color:#b6aebd ;}"), ##ABB0B4AF
                                   
