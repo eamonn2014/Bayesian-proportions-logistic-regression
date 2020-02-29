@@ -16,9 +16,9 @@ options(max.print=1000000)
 fig.width <- 400
 fig.height <- 300
 fig.width2 <- 1400
-fig.height2 <- 350
+fig.height2 <- 330#50
 fig.width3 <- 1300  
-fig.height3 <- 400
+fig.height3 <- 350#400
 fig.width4 <- 1380
 fig.height4 <- 300
 p1 <- function(x) {formatC(x, format="f", digits=1)}
@@ -42,7 +42,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                 
                 h2("Estimates of and tests of proportions Bayesian style"),
                 
-                h4("Imagine planning a clinicial trial. From a previous clinical trail studying the disease we observed
+                h4("Imagine planning a randomised clinicial trial with equal recruitment in a treatment arm and control arm. From a previous clinical trail studying the disease we observed
                 clinical events on the placebo arm but we have no knowledge for the new drug. Here the clincial events are a good clinical outcome. We plan a study, using the information
                 from the earlier study via an appropriate Beta prior for the placebo. We will use an uniformative (uniform prior) for the treatment group 
                 as we know nothing about the expected event rate. It is hoped that we will see an 30% event rate with the new treatment. 
