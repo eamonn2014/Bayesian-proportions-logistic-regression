@@ -47,7 +47,8 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                 clinical events on the placebo arm but we have no knowledge for the new drug. Here clincial events are a good clinical outcome. 
                 We plan a new study, using the information
                 from the previous study via an appropriate Beta prior for the placebo. As we have no data regarding the expected event rate for the treatment 
-                we will use an uninformative (uniform) prior. It is hoped that we will see a 30% event rate with the new treatment. 
+                we will use a reference, uniform prior, try others for example Beta(0.5,0.5) or Beta(0,0). 
+                There is no such thing as a noninformative prior. It is hoped that we will see a 30% event rate with the new treatment. 
                 We fix the sample size and investigate the posterior distribtution of the difference in proportions, the ratio and the odds ratio.
                 We observed 10 clincial events in 50 patients (20%) in the placebo arm of the earlier trial, we will therefore use a Beta(11, 41) for the placebo prior
                 to plan our new study. With a sample size of 50 per arm, can we expect p(efficacy) > 0.95?
@@ -340,7 +341,7 @@ server <- shinyServer(function(input, output   ) {
         
         sample <- random.sample()
        
-        x<- seq(0,1, length.out=10000)
+        x<- seq(0.001,.999, length.out=10000)
         
         trt.alpha<- sample$trt.alpha
         trt.beta<-  sample$trt.beta
@@ -353,7 +354,8 @@ server <- shinyServer(function(input, output   ) {
         tmp <- max(tmp1, tmp2)
          
         par(bg = 'lightgoldenrodyellow')
-       
+      
+        
         curve(dbeta(x, trt.alpha, trt.beta),col = "blue", xlab = c("Probabiity"), 
               main=paste0("The Beta distribution for treatment in blue with shape parameters (",p2(trt.alpha),",",p2(trt.beta),") and control in black (",p2(ctr.alpha),",",p2(ctr.beta),")             "  
               ),
@@ -368,7 +370,7 @@ server <- shinyServer(function(input, output   ) {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     output$trt.plot1 <- renderPlot({         
         
-        x<- seq(0,1, length.out=10000)
+      x<- seq(0.001,.999, length.out=10000)
         
         sample <- random.sample()
         
@@ -386,7 +388,7 @@ server <- shinyServer(function(input, output   ) {
         tmp2 <- max(c(dbeta(x,y2+a1, n2-y2+b1)))
         tmp <- max(tmp1, tmp2)
         
-        par(bg = 'lightgoldenrodyellow') 
+        par(bg = 'lightgoldenrodyellow')
         
         curve(dbeta(x, y1+a, n1-y1+b),col = "blue", xlab = c("Probabiity"), 
               main=paste0("The Beta distribution for treatment in blue with shape parameters (",p2(y1+a),",",p2(n1-y1+b),") and control in black (",p2(y2+a1),",",p2(n2-y2+b1),")"  
