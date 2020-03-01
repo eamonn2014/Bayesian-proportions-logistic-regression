@@ -1,6 +1,7 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Rshiny ideas from on https://gallery.shinyapps.io/multi_regression/
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+rm(list=ls())
 library(ggplot2)
 library(shiny) 
 require(LearnBayes)
@@ -9,6 +10,7 @@ library(shinyWidgets)
 library(shinythemes)  # more funky looking apps
 library(rstan)
 library(DT)
+require(rms) # freq logistic regression
 
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
@@ -26,7 +28,6 @@ p2 <- function(x) {formatC(x, format="f", digits=2)}
 options(width=200)
 set.seed(12345) # reproducible
 
-pop=1e6 # this is the population size we take sample from
 is.even <- function(x){ x %% 2 == 0 } # function to id. odd maybe useful
 
 
@@ -193,6 +194,11 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            div( verbatimTextOutput("fisher")),
                                            h4("2-sample test for equality of proportions without continuity correction"), 
                                            div( verbatimTextOutput("prop")),
+                                           h4("Logistic regression"), 
+                                           div( verbatimTextOutput("logregx")),
+                                         
+                                           
+                                           
                                   )
                                  
                               )
@@ -539,23 +545,32 @@ server <- shinyServer(function(input, output   ) {
       y1 <- sample$y1
       n2 <- sample$n2
       y2 <- sample$y2
-      
-      # n1 <- 50  
+
+      # n1 <- 50
       # y1 <- 15
       # n2 <- 50
       # y2 <- 10
 
       
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~
       data <- matrix(c(y1, n1-y1,y2,n2-y2),nr=2,dimnames=list(c("response","nonresponse"), c("trt","ctrl")))
       f <- fisher.test(data)
       
-      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~
       res <- prop.test(x = c(y1, y2), n = c(n1, n2), correct = FALSE)
       pr <- res 
-
-      return(list(f= f, pr=pr  )) 
       
-    })
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # # logistic regression
+  
+      Table <- t( matrix(c(y1,y2,n1-y1,n2-y2), nc=2))
+      f99 <- glm(as.table(Table) ~ c(1,0), family=binomial)
+      f100 <- exp(coef(f99))
+  
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~
+      return(list(f= f, pr=pr , logreg = f100  ))   #, logreg = f99
+      
+  })
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
@@ -567,6 +582,12 @@ server <- shinyServer(function(input, output   ) {
     output$prop <- renderPrint({
       
       return(print(fisher()$pr, digits=4))
+      
+    })
+    
+    output$logregx <- renderPrint({
+      
+      return(print(fisher()$logreg, digits=4))
       
     })
     #~~~~~~~~~~~~~~
