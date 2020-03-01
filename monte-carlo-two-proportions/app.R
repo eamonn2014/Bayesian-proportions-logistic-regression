@@ -194,7 +194,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            div( verbatimTextOutput("fisher")),
                                            h4("2-sample test for equality of proportions without continuity correction"), 
                                            div( verbatimTextOutput("prop")),
-                                           h4("Logistic regression"), 
+                                           h4("Logistic regression odds ratio"), 
                                            div( verbatimTextOutput("logregx")),
                                          
                                            
@@ -546,10 +546,10 @@ server <- shinyServer(function(input, output   ) {
       n2 <- sample$n2
       y2 <- sample$y2
 
-      # n1 <- 50
-      # y1 <- 15
-      # n2 <- 50
-      # y2 <- 10
+      n1 <- 50
+      y1 <- 15
+      n2 <- 50
+      y2 <- 10
 
       
       #~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -565,10 +565,41 @@ server <- shinyServer(function(input, output   ) {
   
       Table <- t( matrix(c(y1,y2,n1-y1,n2-y2), nc=2))
       f99 <- glm(as.table(Table) ~ c(1,0), family=binomial)
-      f100 <- exp(coef(f99))
+      f100 <- exp(coef(f99))[2][[1]]
   
       #~~~~~~~~~~~~~~~~~~~~~~~~~~
-      return(list(f= f, pr=pr , logreg = f100  ))   #, logreg = f99
+      
+      d = as.data.frame(as.table(as.matrix(data)))
+      
+      # from stack exchange
+      countsToCases <- function(x, countcol = "Freq") {
+        # Get the row indices to pull from x
+        idx <- rep.int(seq_len(nrow(x)), x[[countcol]])
+        # Drop count column
+        x[[countcol]] <- NULL
+        # Get the rows from x
+        x[idx, ]
+      }
+      
+      
+      dd <- countsToCases(d)
+      rownames(dd)<-NULL
+      
+      
+      dd$y <- ifelse(dd$Var1 %in% "response",1,0)
+      dd$x <- ifelse(dd$Var2 %in% "trt",1,0)
+      dd$Var1 <- dd$Var2 <- NULL
+     
+      #y <- dd$y; x <- dd$x
+      # summary(glm(y ~ x, family=binomial))
+      
+      ddd <<- datadist(dd)
+      options( datadist = "ddd" )
+      harrell <- summary(lrm(y~x,dd))
+      
+   
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~
+      return(list(f= f, pr=pr , logreg = harrell  ))   #, logreg = f99
       
   })
     
