@@ -184,6 +184,15 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            h4(paste("Posterior distributions : 1 risk difference (trt-ctrl);","2 relative risk (trt/ctrl); 3 odds ratio [odds(trt)/odds(ctrl)]")), 
                                            div(plotOutput("diff2", width=fig.width4, height=fig.height4)),  
                                            h6(paste("Blue vertical lines demark 95% credible intervals, red dashed lines are population values of interest")), 
+                                  ),
+                                  
+                                  tabPanel("3 Frequentist analysis", value=3, 
+                                           h3("No prior information is used ! Also don't forget the confidence intervals cannot be interpreted
+                                              that there is the stated probability that the true population parameter lies in the interval !"),
+                                           h4("Fisher's Exact Test for Count Data"),
+                                           div( verbatimTextOutput("fisher")),
+                                           h4("2-sample test for equality of proportions without continuity correction"), 
+                                           div( verbatimTextOutput("prop")),
                                   )
                                  
                               )
@@ -521,7 +530,53 @@ server <- shinyServer(function(input, output   ) {
     })
     
     # --------------------------------------------------------------------------
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    fisher <- reactive({
+      
+      sample <- random.sample()
+      
+      n1 <- sample$n1  
+      y1 <- sample$y1
+      n2 <- sample$n2
+      y2 <- sample$y2
+      
+      # n1 <- 50  
+      # y1 <- 15
+      # n2 <- 50
+      # y2 <- 10
+
+      
+      data <- matrix(c(y1, n1-y1,y2,n2-y2),nr=2,dimnames=list(c("response","nonresponse"), c("trt","ctrl")))
+      f <- fisher.test(data)
+      
+      
+      res <- prop.test(x = c(y1, y2), n = c(n1, n2), correct = FALSE)
+      pr <- res 
+
+      return(list(f= f, pr=pr  )) 
+      
+    })
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    output$fisher <- renderPrint({
+      
+      return(print(fisher()$f, digits=4))
+      
+    })
+    output$prop <- renderPrint({
+      
+      return(print(fisher()$pr, digits=4))
+      
+    })
+    #~~~~~~~~~~~~~~
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # ---------------------------------------------------------------------------
+    
+    
 })
 
 # Run the application 
