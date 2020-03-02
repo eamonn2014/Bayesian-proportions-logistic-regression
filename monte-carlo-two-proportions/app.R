@@ -11,6 +11,7 @@ library(shinythemes)  # more funky looking apps
 library(rstan)
 library(DT)
 require(rms) # freq logistic regression
+library(shinyalert)
 
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
@@ -18,7 +19,7 @@ options(max.print=1000000)
 fig.width <- 400
 fig.height <- 300
 fig.width2 <- 1400
-fig.height2 <- 330#50
+fig.height2 <- 300#50
 fig.width3 <- 1300  
 fig.height3 <- 350#400
 fig.width4 <- 1380
@@ -34,7 +35,7 @@ is.even <- function(x){ x %% 2 == 0 } # function to id. odd maybe useful
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/packages/shinythemes/versions/1.1.2
                 # paper
-                
+                useShinyalert(),  # Set up shinyalert
                 setBackgroundColor(
                     color = c( "#2171B5", "#F7FBFF"), 
                     gradient = "linear",
@@ -213,6 +214,9 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
 
 server <- shinyServer(function(input, output   ) {
     
+  shinyalert("Bayesian evaluations of two proportions via Monte Carlo simulation",
+             "Use at your own risk",
+             type = "info")
     # --------------------------------------------------------------------------
     # ---------------------------------------------------------------------------
     # --------------------------------------------------------------------------
