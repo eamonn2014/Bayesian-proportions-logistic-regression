@@ -49,7 +49,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                 clinical events on the placebo arm but we have no knowledge for the new drug. Here clincial events are a good clinical outcome. 
                 We plan a new study, using the information
                 from the previous study via an appropriate Beta prior for the placebo. As we have no data regarding the expected event rate for the treatment 
-                we will use a reference, uniform prior, try others for example Beta(0.5,0.5) or Beta(0,0). 
+                we will use a reference prior Beta(0.5,0.5), try others for example the uniform distribution Beta(1,1) or Beta(0,0). 
                 There is no such thing as a noninformative prior. It is hoped that we will see a 30% event rate with the new treatment. 
                 We fix the sample size and investigate the posterior distribtution of the difference in proportions, the ratio and the odds ratio.
                 We observed 10 clincial events in 50 patients (20%) in the placebo arm of the earlier trial, we will therefore use a Beta(11, 41) for the placebo prior
@@ -85,7 +85,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                   
                                       
                                       textInput('vec3', 
-                                                div(h5("Beta shape parameters for treatment prior")), "1, 1"),
+                                                div(h5("Beta shape parameters for treatment prior")), ".5, .5"),
                                       
                                       textInput('vec4', 
                                                 div(h5("Beta shape parameters for control prior")), "11, 41"),
