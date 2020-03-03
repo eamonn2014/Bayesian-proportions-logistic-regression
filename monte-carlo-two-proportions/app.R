@@ -376,7 +376,7 @@ server <- shinyServer(function(input, output   ) {
       
         
         curve(dbeta(x, trt.alpha, trt.beta),col = "blue", xlab = c("Probabiity"), 
-              main=paste0("The Beta distribution for treatment in blue with shape parameters (",p2(trt.alpha),",",p2(trt.beta),") and control in black (",p2(ctr.alpha),",",p2(ctr.beta),")             "  
+              main=paste0("The Beta distribution for treatment in blue with shape parameters (",p2(trt.alpha),", ",p2(trt.beta),") and control in black (",p2(ctr.alpha),", ",p2(ctr.beta),")             "  
               ),
               ylab = "Density", xlim=c(0.0,1),  ylim=c(0, (tmp)*1.1) #ylim=c(0, max(
         )
@@ -410,7 +410,7 @@ server <- shinyServer(function(input, output   ) {
         par(bg = 'lightgoldenrodyellow')
         
         curve(dbeta(x, y1+a, n1-y1+b),col = "blue", xlab = c("Probabiity"), 
-              main=paste0("The Beta distribution for treatment in blue with shape parameters (",p2(y1+a),",",p2(n1-y1+b),") and control in black (",p2(y2+a1),",",p2(n2-y2+b1),")"  
+              main=paste0("The Beta distribution for treatment in blue with shape parameters (",p2(y1+a),", ",p2(n1-y1+b),") and control in black (",p2(y2+a1),", ",p2(n2-y2+b1),")"  
               ),
               ylab = "Density", xlim=c(0.0,1),  ylim=c(0, (tmp)*1.1) #ylim=c(0, max(tmp1)),
               
