@@ -215,7 +215,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
 server <- shinyServer(function(input, output   ) {
     
   shinyalert("Bayesian evaluations of two proportions via Monte Carlo simulation",
-             "Use at your own risk",
+             "Use at your own (Bayesian calculated) risk",
              type = "info")
     # --------------------------------------------------------------------------
     # ---------------------------------------------------------------------------
