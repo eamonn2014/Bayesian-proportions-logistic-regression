@@ -535,7 +535,9 @@ server <- shinyServer(function(input, output   ) {
                       # scroller = T
                   ))  %>% 
             formatRound(
-                columns= c("parameter","Mean","p2.5","p25","p50","p75","p975"), digits=c(0,3,3,3,3,3,3)  )
+                columns= c("Mean","p2.5","p25","p50","p75","p975"), digits=4  )
+        
+    
         
     })
     
@@ -550,10 +552,10 @@ server <- shinyServer(function(input, output   ) {
       n2 <- sample$n2
       y2 <- sample$y2
 
-      n1 <- 50
-      y1 <- 15
-      n2 <- 50
-      y2 <- 10
+      # n1 <- 50
+      # y1 <- 15
+      # n2 <- 50
+      # y2 <- 10
 
       
       #~~~~~~~~~~~~~~~~~~~~~~~~~~
