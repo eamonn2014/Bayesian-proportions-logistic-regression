@@ -65,11 +65,15 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                   
                                   tags$style(type="text/css", ".span8 .well { background-color: #00FFFF; }"),
                                 
+                     
+                                  actionButton(inputId='ab1', label="Shiny",   icon = icon("th"), 
+                                               onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Bayesian-proportions-logistic-regression/master/monte-carlo-two-proportions/app.R?token=ABVUVOXEAZG7QQK7OX26XTK7AS3ZU', '_blank')"),   
+                                  actionButton(inputId='ab1', label="R code",   icon = icon("th"), 
+                                               onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Bayesian-proportions-logistic-regression/master/monte-carlo-two-proportions/Rcode.R?token=ABVUVOSTMQ7PG5SPU3WZHL27AS3XI', '_blank')"),   
+                                  actionButton("resample", "Rerun Monte Carlo"),
+                                  br(), br(),
+                                            
                                   
-                                  actionButton(inputId='ab1', label="R code",   icon = icon("th"),   
-                                               onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Bayesian-proportions-logistic-regression/master/monte-carlo-two-proportions/app.R', '_blank')"),    
-                                  actionButton("resample", "Rerun the Monte Carlo simulations"),
-                                  br(), # br(), 
                                   tags$style(".well {background-color:#b6aebd ;}"), ##ABB0B4AF
                                   
                                   h4("You can change the beta priors, the (planned) sample size and the number of events in the boxes below."),
