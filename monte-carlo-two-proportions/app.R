@@ -364,7 +364,7 @@ server <- shinyServer(function(input, output   ) {
         
         sample <- random.sample()
        
-        x<- seq(0.001,.999, length.out=10000)
+        x<- seq(0.001,.999, length.out=100000)
         
         trt.alpha<- sample$trt.alpha
         trt.beta<-  sample$trt.beta
@@ -379,21 +379,30 @@ server <- shinyServer(function(input, output   ) {
         par(bg = 'lightgoldenrodyellow')
       
         
-        curve(dbeta(x, trt.alpha, trt.beta),col = "blue", xlab = c("Probabiity"), 
+        A <- curve(dbeta(x, trt.alpha, trt.beta),col = "blue", xlab = c("Probabiity"), 
               main=paste0("The Beta distribution for treatment in blue with shape parameters (",p2(trt.alpha),", ",p2(trt.beta),") and control in black (",p2(ctr.alpha),", ",p2(ctr.beta),")             "  
               ),
               ylab = "Density", xlim=c(0.0,1),  ylim=c(0, (tmp)*1.1) #ylim=c(0, max(
         )
-        curve(dbeta(x, ctr.alpha, ctr.beta),col = "black", xlab = c("Probabiity"), 
+        B <- curve(dbeta(x, ctr.alpha, ctr.beta),col = "black", xlab = c("Probabiity"), 
                 
               ylab = "Density",  add=TRUE
         )
+        
+        mytext1 <- function(n) paste('Beta(', n, ')', sep = '')
+        
+        A$y[is.infinite(A$y)] <- 10
+        B$y[is.infinite(B$y)] <- 10
+        
+        text(x=which.max( B$y )/100+.03, max(B$y)*1.05, mytext1(paste0(ctr.alpha, ",", ctr.beta)),  col='black')
+        text(x=which.max( A$y )/100+.03, max(A$y)*1.05, mytext1(paste0(trt.alpha, ",", trt.beta)),  col='blue')
+        
         
     })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     output$trt.plot1 <- renderPlot({         
         
-      x<- seq(0.001,.999, length.out=10000)
+      x<- seq(0.001,.999, length.out=100000)
         
         sample <- random.sample()
         
@@ -413,19 +422,25 @@ server <- shinyServer(function(input, output   ) {
         
         par(bg = 'lightgoldenrodyellow')
         
-        curve(dbeta(x, y1+a, n1-y1+b),col = "blue", xlab = c("Probabiity"), 
+       A <-  curve(dbeta(x, y1+a, n1-y1+b),col = "blue", xlab = c("Probabiity"), 
               main=paste0("The Beta distribution for treatment in blue with shape parameters (",p2(y1+a),", ",p2(n1-y1+b),") and control in black (",p2(y2+a1),", ",p2(n2-y2+b1),")"  
               ),
               ylab = "Density", xlim=c(0.0,1),  ylim=c(0, (tmp)*1.1) #ylim=c(0, max(tmp1)),
               
         )
-        curve(dbeta(x, y2+a1,  n2-y2+b1),col = "black", xlab = c("Probabiity"), 
+        B <- curve(dbeta(x, y2+a1,  n2-y2+b1),col = "black", xlab = c("Probabiity"), 
            
               ylab = "Density" , add=TRUE
              
         )
         
+        mytext1 <- function(n) paste('Beta(', n, ')', sep = '')
         
+        A$y[is.infinite(A$y)] <- 10
+        B$y[is.infinite(B$y)] <- 10
+        
+        text(x=which.max( A$y )/100+.03, max(A$y)*1.05, mytext1(paste0(y1+a, ",", n1-y1+b)),  col='blue')
+        text(x=which.max( B$y )/100+.03, max(B$y)*1.05, mytext1(paste0(y2+a1, ",",  n2-y2+b1)),  col='black')
         
     })
     
