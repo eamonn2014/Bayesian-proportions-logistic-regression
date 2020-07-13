@@ -81,7 +81,7 @@ is.even <- function(x){ x %% 2 == 0 } # function to id. odd maybe useful
     diff =   theta1-theta2                    # simulated differences
     ratio =  theta1/theta2 
     or <-   (theta1/ (1-theta1)) / (theta2/(1-theta2))
-    ptrt <- mean( theta1>theta2)  
+    ptrt <- mean( theta1>theta2)    #  mean( (theta1-theta2) >0)
     prob.ratio <- (theta1/theta2 )>1
     prob.or <-  ((theta1/ (1-theta1)) / (theta2/(1-theta2))) > 2
     

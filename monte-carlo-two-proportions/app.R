@@ -54,7 +54,8 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                 There is no such thing as a noninformative prior. It is hoped that we will see a 30% event rate with the new treatment. 
                 We fix the sample size and investigate the posterior distribtution of the difference in proportions, the ratio and the odds ratio.
                 We observed 10 clincial events in 50 patients (20%) in the placebo arm of the earlier trial, we will therefore use a Beta(11, 41) for the placebo prior
-                to plan our new study. With a sample size of 50 per arm, can we expect p(efficacy) > 0.95?
+                to plan our new study. Amongst other quantities of interest we estimate the prob(treatment effect>0), that is the probability of efficacy. If prob(treatment effect<0)
+                then this would be a detrimental effect. With a sample size of 50 per arm, can we expect prob(efficacy) > 0.95?
               "), 
                 
                 h3("  "), 
