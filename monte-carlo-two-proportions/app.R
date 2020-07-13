@@ -380,12 +380,12 @@ server <- shinyServer(function(input, output   ) {
         par(bg = 'lightgoldenrodyellow')
       
         
-        A <- curve(dbeta(x, trt.alpha, trt.beta),col = "blue", xlab = c("Probabiity"), 
+        A <- curve(dbeta(x, trt.alpha, trt.beta),col = "blue", xlab = c("Probability"), 
               main=paste0("The Beta distribution for treatment in blue with shape parameters (",p2(trt.alpha),", ",p2(trt.beta),") and control in black (",p2(ctr.alpha),", ",p2(ctr.beta),")             "  
               ),
               ylab = "Density", xlim=c(0.0,1),  ylim=c(0, (tmp)*1.1) #ylim=c(0, max(
         )
-        B <- curve(dbeta(x, ctr.alpha, ctr.beta),col = "black", xlab = c("Probabiity"), 
+        B <- curve(dbeta(x, ctr.alpha, ctr.beta),col = "black", xlab = c("Probability"), 
                 
               ylab = "Density",  add=TRUE
         )
@@ -434,7 +434,7 @@ server <- shinyServer(function(input, output   ) {
         
         par(bg = 'lightgoldenrodyellow')
         
-       A <-  curve(dbeta(x, y1+a, n1-y1+b),col = "blue", xlab = c("Probabiity"), 
+       A <-  curve(dbeta(x, y1+a, n1-y1+b),col = "blue", xlab = c("Probability"), 
               main=paste0(
     "The Beta distribution for treatment in blue with shape parameters (",p2(y1+a),", ",p2(n1-y1+b),") and control in black (",p2(y2+a1),", ",p2(n2-y2+b1),")"  
               ,  "\np(trt > ctrl) = " ,  p4(mean(z))      , ", mean risk difference trt-ctrl = "  ,  X , ", 95%CI (",Y,", ",Z,")"            ),
@@ -442,7 +442,7 @@ server <- shinyServer(function(input, output   ) {
               ylab = "Density", xlim=c(0.0,1),  ylim=c(0, (tmp)*1.1) #ylim=c(0, max(tmp1)),
               
         )
-        B <- curve(dbeta(x, y2+a1,  n2-y2+b1),col = "black", xlab = c("Probabiity"), 
+        B <- curve(dbeta(x, y2+a1,  n2-y2+b1),col = "black", xlab = c("Probability"), 
            
               ylab = "Density" , add=TRUE
              
