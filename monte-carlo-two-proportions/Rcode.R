@@ -24,6 +24,7 @@ fig.width4 <- 1380
 fig.height4 <- 300
 p1 <- function(x) {formatC(x, format="f", digits=1)}
 p2 <- function(x) {formatC(x, format="f", digits=2)}
+p4 <- function(x) {formatC(x, format="f", digits=4)}
 options(width=200)
 set.seed(12345) # reproducible
 
@@ -125,7 +126,7 @@ is.even <- function(x){ x %% 2 == 0 } # function to id. odd maybe useful
  
     z <-  diff
     
-    q <- quantile(z,c(.025, 0.25, 0.5, 0.75, 0.975))
+    q1 <- q <- quantile(z,c(.025, 0.25, 0.5, 0.75, 0.975))
     par(bg = 'lightgoldenrodyellow') 
     par(mfrow=c(1,3))
     plot(density(z),
@@ -206,18 +207,29 @@ is.even <- function(x){ x %% 2 == 0 } # function to id. odd maybe useful
     text(x=which.max( B$y )/100+.03, max(B$y)*1.05, mytext1(paste0(ctr.alpha, ",", ctr.beta)),  col='black')
     text(x=which.max( A$y )/100+.03, max(A$y)*1.05, mytext1(paste0(trt.alpha, ",", trt.beta)),  col='blue')
     
- 
+  ######################################posterior
    
     tmp1 <- max(c(dbeta(x,y1+a,  n1-y1+b)  ) )
     tmp2 <- max(c(dbeta(x,y2+a1, n2-y2+b1)))
     tmp <- max(tmp1, tmp2)
     
+    
+   
+    X <- as.numeric(p4(q1[3])[1][[1]])
+    X <- p4(mean(z1))
+    Y <- as.numeric(p4(q1[1])[1][[1]])
+    Z <- as.numeric(p4(q1[5])[1][[1]])
+    
+    
+    
     par(bg = 'lightgoldenrodyellow')
     
     
     A <-  curve(dbeta(x, y1+a, n1-y1+b),col = "blue", xlab = c("Probabiity"), 
-                main=paste0("The Beta distribution for treatment in blue with shape parameters (",p2(y1+a),", ",p2(n1-y1+b),") and control in black (",p2(y2+a1),", ",p2(n2-y2+b1),")"  
-                ),
+                main=paste0(
+                  "The Beta distribution for treatment in blue with shape parameters (",p2(y1+a),", ",p2(n1-y1+b),") and control in black (",p2(y2+a1),", ",p2(n2-y2+b1),")"  
+                  ,  "\np(trt > ctrl) =" ,  p4(mean(ptrt))      , ", mean risk difference trt-ctrl = "  ,  X , ", 95%CI (",Y,", ",Z,")"            ),
+                
                 ylab = "Density", xlim=c(0.0,1),  ylim=c(0, (tmp)*1.1) #ylim=c(0, max(tmp1)),
                 
     )

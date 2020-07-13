@@ -26,6 +26,7 @@ fig.width4 <- 1380
 fig.height4 <- 300
 p1 <- function(x) {formatC(x, format="f", digits=1)}
 p2 <- function(x) {formatC(x, format="f", digits=2)}
+p4 <- function(x) {formatC(x, format="f", digits=4)}
 options(width=200)
 set.seed(12345) # reproducible
 
@@ -400,8 +401,19 @@ server <- shinyServer(function(input, output   ) {
         
     })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    output$trt.plot1 <- renderPlot({         
+    output$trt.plot1 <- renderPlot({       
+      
+      sample <- random.sample()
         
+      z <- mcmc()$ptrt
+      z1 <- mcmc()$diff
+      
+      q <- quantile(z1 ,c(.025, 0.25, 0.5, 0.75, 0.975))
+      X <- as.numeric(p4(q[3])[1][[1]])
+      X <- p4(mean(z1))
+      Y <- as.numeric(p4(q[1])[1][[1]])
+      Z <- as.numeric(p4(q[5])[1][[1]])
+      
       x<- seq(0.001,.999, length.out=100000)
         
         sample <- random.sample()
@@ -423,8 +435,10 @@ server <- shinyServer(function(input, output   ) {
         par(bg = 'lightgoldenrodyellow')
         
        A <-  curve(dbeta(x, y1+a, n1-y1+b),col = "blue", xlab = c("Probabiity"), 
-              main=paste0("The Beta distribution for treatment in blue with shape parameters (",p2(y1+a),", ",p2(n1-y1+b),") and control in black (",p2(y2+a1),", ",p2(n2-y2+b1),")"  
-              ),
+              main=paste0(
+    "The Beta distribution for treatment in blue with shape parameters (",p2(y1+a),", ",p2(n1-y1+b),") and control in black (",p2(y2+a1),", ",p2(n2-y2+b1),")"  
+              ,  "\np(trt > ctrl) =" ,  p4(mean(z))      , ", mean risk difference trt-ctrl = "  ,  X , ", 95%CI (",Y,", ",Z,")"            ),
+    
               ylab = "Density", xlim=c(0.0,1),  ylim=c(0, (tmp)*1.1) #ylim=c(0, max(tmp1)),
               
         )
@@ -439,8 +453,12 @@ server <- shinyServer(function(input, output   ) {
         A$y[is.infinite(A$y)] <- 10
         B$y[is.infinite(B$y)] <- 10
         
-        text(x=which.max( A$y )/100+.03, max(A$y)*1.05, mytext1(paste0(y1+a, ",", n1-y1+b)),  col='blue')
+        text(x=which.max( A$y )/100+.03, max(A$y)*1.05, mytext1(paste0(y1+a,  ",",  n1-y1+b)),  col='blue')
         text(x=which.max( B$y )/100+.03, max(B$y)*1.05, mytext1(paste0(y2+a1, ",",  n2-y2+b1)),  col='black')
+        
+        
+        # text(x=.9, y=max( c(B$y,A$y) ),    paste0("p(trt > ctrl) = ",  p4(mean(ptrt))),  col='black')
+        # text(x=.9, y=max( c(B$y,A$y) )*.9, paste0("risk diff. trt-ctrl = ",  X , " 95%CI (",Y,", ",Z,")")  ,  col='black')
         
     })
     
