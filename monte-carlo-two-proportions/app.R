@@ -103,17 +103,18 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                 div(h5("Control sample size and no. of events")), "50, 10"),
                                       
                                    
-                                      div(h5("References:")),  
+                                      div(h5("REFERENCES:")),  
                                       
-                                      tags$a(href = "https://lingpipe-blog.com/2009/10/13/bayesian-counterpart-to-fisher-exact-test-on-contingency-tables/", "[1] Ling Pipe"),
+                                      tags$a(href = "https://lingpipe-blog.com/2009/10/13/bayesian-counterpart-to-fisher-exact-test-on-contingency-tables/", tags$span(style="color:blue","[1] Ling Pipe"),), 
                                       div(p(" ")),
-                                      tags$a(href = "https://statmodeling.stat.columbia.edu/2009/10/13/what_is_the_bay/", "[2] Gelman"),
+                                      tags$a(href = "https://statmodeling.stat.columbia.edu/2009/10/13/what_is_the_bay/",  tags$span(style="color:blue","[2] Gelman"),), 
                                       div(p(" ")),
-                                      tags$a(href = "https://en.wikipedia.org/wiki/Beta_distribution", "[3] Beta distribution"),
+                                      tags$a(href = "https://en.wikipedia.org/wiki/Beta_distribution",  tags$span(style="color:blue","[3] Beta distribution"),), 
                                        div(p(" ")),
-                                       tags$a(href = "https://www.tjmahr.com/bayesian-fisher-exact-test/", "[4] Blog article"),
+                                       tags$a(href = "https://www.tjmahr.com/bayesian-fisher-exact-test/",  tags$span(style="color:blue","[4] Blog article"),), 
                                        div(p(" ")),
                                     
+                                       
                                    
                                   )
                                   
