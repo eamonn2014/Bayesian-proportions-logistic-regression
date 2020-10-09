@@ -378,7 +378,7 @@ server <- shinyServer(function(input, output   ) {
         tmp2 <- max(c(dbeta(x, ctr.alpha, ctr.beta)))
         tmp <- max(tmp1, tmp2)
          
-        par(bg = 'white')
+        par(bg = 'darkseagreen1')
       
         
         A <- curve(dbeta(x, trt.alpha, trt.beta),col = "blue", xlab = c("Probability"), 
@@ -433,7 +433,7 @@ server <- shinyServer(function(input, output   ) {
         tmp2 <- max(c(dbeta(x,y2+a1, n2-y2+b1)))
         tmp <- max(tmp1, tmp2)
         
-        par(bg = 'white')
+        par(bg = 'darkseagreen1')
         
        A <-  curve(dbeta(x, y1+a, n1-y1+b),col = "blue", xlab = c("Probability"), 
               main=paste0(
